@@ -4,24 +4,25 @@
 #include <opencv2/highgui.hpp>
 
 #include <opencv2/opencv.hpp>
-#include <opencv2/cudaarithm.hpp>
+//#include <opencv4/opencv2/cudaarithm.hpp>
 
 #include <opencv2/imgproc/imgproc.hpp>
-#include <QApplication>
-#include <QMouseEvent>
-#include <QLabel>
+//#include <QApplication>
+//#include <QMouseEvent>
+//#include <QLabel>
 
 using namespace std;
 using namespace cv;
 using namespace cuda;
 
-#include "calibrate.h"
+//#include "calibrate.h"
 
 // @todo сделать триангуляцию точек на стереоизображение
 //          протестировать триангуляцию на
 //          автоматизировать алгоритм нахождения ключевых точек на изображении
 
 // Проверка работоспособности CUDA
+/*
 void CUDA_work_check(){
     printShortCudaDeviceInfo(getDevice());
     int cuda_devices_number = getCudaEnabledDeviceCount();
@@ -30,9 +31,11 @@ void CUDA_work_check(){
     bool _isd_evice_compatible = _deviceInfo.isCompatible();
     cout << "CUDA Device(s) Compatible: " << _isd_evice_compatible << endl;
 }
+*/
 
 // Преобразование изображений (смещение, повоторот, устранение искажений)
 // rectifyImage(cam_par_output_t& output_parameters, OutputArray image, cv::Mat image2)
+/*
 void rectifyImage(cv::Mat image1, cv::Mat image2, cv::Mat& combinedImage, cam_par_output_t& output_parameters){
     cv::Mat R1, R2, P1, P2, Q;
     cv::Rect validROI[2];
@@ -60,6 +63,7 @@ void rectifyImage(cv::Mat image1, cv::Mat image2, cv::Mat& combinedImage, cam_pa
     cv::hconcat(cropped1, cropped2, combinedImage);  // Или vconcat
     cv::imshow("Combined", combinedImage);
 }
+*/
 
 
 int main(int argc, char** argv) {
@@ -76,7 +80,6 @@ int main(int argc, char** argv) {
 
     leftCamera.release();
     rightCamera.release();
-    */
 
     // Калибровка камер через заготоволенный датасет
     Mat cameraMatrixL,distCoeffsL,RL,TL;
@@ -128,6 +131,8 @@ int main(int argc, char** argv) {
 
     rectifyImage(im1, im2, imResult, o_par);
     //triangulation();
+    */
+    //CUDA_work_check();
     return 0;
 }
 
