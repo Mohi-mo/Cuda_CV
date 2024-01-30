@@ -26,25 +26,25 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 10,
+				"line" : 11,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 15,
+				"line" : 16,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 18,
+				"line" : 22,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 12,
+				"line" : 13,
 				"parent" : 0
 			}
 		]
@@ -89,6 +89,10 @@
 					"path" : "/home/c_ubuntu/Repos/CV_test/CV_P1"
 				},
 				{
+					"backtrace" : 0,
+					"path" : "/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/include"
+				},
+				{
 					"backtrace" : 4,
 					"path" : "/home/c_ubuntu/Repos/CV_test/CV_P1/$CMAKE_SOURCE_DIR"
 				},
@@ -127,8 +131,16 @@
 			"sourceIndexes" : 
 			[
 				0,
-				1
+				1,
+				2
 			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 0,
+			"id" : "CV_P1_autogen::@6890427a1f51a3e7e1df"
 		}
 	],
 	"id" : "CV_P1::@6890427a1f51a3e7e1df",
@@ -334,6 +346,11 @@
 				"role" : "libraries"
 			},
 			{
+				"backtrace" : 3,
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libQt5Gui.so.5.12.8",
+				"role" : "libraries"
+			},
+			{
 				"backtrace" : 2,
 				"fragment" : "/usr/local/lib/libopencv_shape.so.4.8.0",
 				"role" : "libraries"
@@ -474,10 +491,7 @@
 				"role" : "libraries"
 			},
 			{
-				"fragment" : "/usr/lib/x86_64-linux-gnu/libQt5Gui.so.5.12.8",
-				"role" : "libraries"
-			},
-			{
+				"backtrace" : 3,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libQt5Core.so.5.12.8",
 				"role" : "libraries"
 			}
@@ -498,12 +512,20 @@
 			"sourceIndexes" : 
 			[
 				0,
-				1
+				1,
+				2
 			]
 		}
 	],
 	"sources" : 
 	[
+		{
+			"backtrace" : 0,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/mocs_compilation.cpp",
+			"sourceGroupIndex" : 0
+		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,

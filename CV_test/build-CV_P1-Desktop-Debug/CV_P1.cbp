@@ -49,6 +49,7 @@
 					<Add option="-DQT_CORE_LIB"/>
 					<Add directory="/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug"/>
 					<Add directory="/home/c_ubuntu/Repos/CV_test/CV_P1"/>
+					<Add directory="/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/include"/>
 					<Add directory="/home/c_ubuntu/Repos/CV_test/CV_P1/$CMAKE_SOURCE_DIR"/>
 					<Add directory="/usr/local/include/opencv4"/>
 					<Add directory="/usr/include/x86_64-linux-gnu/qt5"/>
@@ -83,6 +84,7 @@
 					<Add option="-DQT_CORE_LIB"/>
 					<Add directory="/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug"/>
 					<Add directory="/home/c_ubuntu/Repos/CV_test/CV_P1"/>
+					<Add directory="/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/include"/>
 					<Add directory="/home/c_ubuntu/Repos/CV_test/CV_P1/$CMAKE_SOURCE_DIR"/>
 					<Add directory="/usr/local/include/opencv4"/>
 					<Add directory="/usr/include/x86_64-linux-gnu/qt5"/>
@@ -105,6 +107,16 @@
 					<DistClean command="/usr/bin/make -j12 -f &quot;/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
+			<Target title="CV_P1_autogen">
+				<Option working_dir="/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/Makefile&quot;  VERBOSE=1 CV_P1_autogen"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
 		</Build>
 		<Unit filename="/home/c_ubuntu/Repos/CV_test/CV_P1/calibrate.cpp">
 			<Option target="CV_P1"/>
@@ -113,6 +125,9 @@
 			<Option target="CV_P1"/>
 		</Unit>
 		<Unit filename="/home/c_ubuntu/Repos/CV_test/CV_P1/main.cpp">
+			<Option target="CV_P1"/>
+		</Unit>
+		<Unit filename="/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/mocs_compilation.cpp">
 			<Option target="CV_P1"/>
 		</Unit>
 		<Unit filename="/home/c_ubuntu/Repos/CV_test/CV_P1/CMakeLists.txt">

@@ -4,6 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
+  "/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/mocs_compilation.cpp" "/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.o"
   "/home/c_ubuntu/Repos/CV_test/CV_P1/calibrate.cpp" "/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CMakeFiles/CV_P1.dir/calibrate.cpp.o"
   "/home/c_ubuntu/Repos/CV_test/CV_P1/main.cpp" "/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CMakeFiles/CV_P1.dir/main.cpp.o"
   )
@@ -20,6 +21,7 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "."
   "/home/c_ubuntu/Repos/CV_test/CV_P1"
+  "CV_P1_autogen/include"
   "/home/c_ubuntu/Repos/CV_test/CV_P1/$CMAKE_SOURCE_DIR"
   "/usr/local/include/opencv4"
   "/usr/include/x86_64-linux-gnu/qt5"

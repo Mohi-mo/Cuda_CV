@@ -123,6 +123,46 @@ CV_P1/fast:
 	$(MAKE) -f CMakeFiles/CV_P1.dir/build.make CMakeFiles/CV_P1.dir/build
 .PHONY : CV_P1/fast
 
+#=============================================================================
+# Target rules for targets named CV_P1_autogen
+
+# Build rule for target.
+CV_P1_autogen: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 CV_P1_autogen
+.PHONY : CV_P1_autogen
+
+# fast build rule for target.
+CV_P1_autogen/fast:
+	$(MAKE) -f CMakeFiles/CV_P1_autogen.dir/build.make CMakeFiles/CV_P1_autogen.dir/build
+.PHONY : CV_P1_autogen/fast
+
+CV_P1_autogen/mocs_compilation.o: CV_P1_autogen/mocs_compilation.cpp.o
+
+.PHONY : CV_P1_autogen/mocs_compilation.o
+
+# target to build an object file
+CV_P1_autogen/mocs_compilation.cpp.o:
+	$(MAKE) -f CMakeFiles/CV_P1.dir/build.make CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.o
+.PHONY : CV_P1_autogen/mocs_compilation.cpp.o
+
+CV_P1_autogen/mocs_compilation.i: CV_P1_autogen/mocs_compilation.cpp.i
+
+.PHONY : CV_P1_autogen/mocs_compilation.i
+
+# target to preprocess a source file
+CV_P1_autogen/mocs_compilation.cpp.i:
+	$(MAKE) -f CMakeFiles/CV_P1.dir/build.make CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.i
+.PHONY : CV_P1_autogen/mocs_compilation.cpp.i
+
+CV_P1_autogen/mocs_compilation.s: CV_P1_autogen/mocs_compilation.cpp.s
+
+.PHONY : CV_P1_autogen/mocs_compilation.s
+
+# target to generate assembly for a file
+CV_P1_autogen/mocs_compilation.cpp.s:
+	$(MAKE) -f CMakeFiles/CV_P1.dir/build.make CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.s
+.PHONY : CV_P1_autogen/mocs_compilation.cpp.s
+
 calibrate.o: calibrate.cpp.o
 
 .PHONY : calibrate.o
@@ -186,6 +226,10 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... CV_P1"
+	@echo "... CV_P1_autogen"
+	@echo "... CV_P1_autogen/mocs_compilation.o"
+	@echo "... CV_P1_autogen/mocs_compilation.i"
+	@echo "... CV_P1_autogen/mocs_compilation.s"
 	@echo "... calibrate.o"
 	@echo "... calibrate.i"
 	@echo "... calibrate.s"

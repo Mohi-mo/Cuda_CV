@@ -14,7 +14,8 @@
 					"source" : ".",
 					"targetIndexes" : 
 					[
-						0
+						0,
+						1
 					]
 				}
 			],
@@ -29,7 +30,8 @@
 					"name" : "CV_P1",
 					"targetIndexes" : 
 					[
-						0
+						0,
+						1
 					]
 				}
 			],
@@ -38,8 +40,15 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "CV_P1::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-CV_P1-Debug-013ecbd4fd815efcc460.json",
+					"jsonFile" : "target-CV_P1-Debug-593fe11ad38849418a49.json",
 					"name" : "CV_P1",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "CV_P1_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-CV_P1_autogen-Debug-2811935dd7109d1b2291.json",
+					"name" : "CV_P1_autogen",
 					"projectIndex" : 0
 				}
 			]

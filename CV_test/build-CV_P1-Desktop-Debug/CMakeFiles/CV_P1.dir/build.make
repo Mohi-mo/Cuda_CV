@@ -57,9 +57,22 @@ include CMakeFiles/CV_P1.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/CV_P1.dir/flags.make
 
+CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.o: CMakeFiles/CV_P1.dir/flags.make
+CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.o: CV_P1_autogen/mocs_compilation.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.o"
+	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.o -c /home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/mocs_compilation.cpp
+
+CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/mocs_compilation.cpp > CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.i
+
+CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/mocs_compilation.cpp -o CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.s
+
 CMakeFiles/CV_P1.dir/main.cpp.o: CMakeFiles/CV_P1.dir/flags.make
 CMakeFiles/CV_P1.dir/main.cpp.o: /home/c_ubuntu/Repos/CV_test/CV_P1/main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/CV_P1.dir/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/CV_P1.dir/main.cpp.o"
 	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/CV_P1.dir/main.cpp.o -c /home/c_ubuntu/Repos/CV_test/CV_P1/main.cpp
 
 CMakeFiles/CV_P1.dir/main.cpp.i: cmake_force
@@ -72,7 +85,7 @@ CMakeFiles/CV_P1.dir/main.cpp.s: cmake_force
 
 CMakeFiles/CV_P1.dir/calibrate.cpp.o: CMakeFiles/CV_P1.dir/flags.make
 CMakeFiles/CV_P1.dir/calibrate.cpp.o: /home/c_ubuntu/Repos/CV_test/CV_P1/calibrate.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/CV_P1.dir/calibrate.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/CV_P1.dir/calibrate.cpp.o"
 	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/CV_P1.dir/calibrate.cpp.o -c /home/c_ubuntu/Repos/CV_test/CV_P1/calibrate.cpp
 
 CMakeFiles/CV_P1.dir/calibrate.cpp.i: cmake_force
@@ -85,12 +98,14 @@ CMakeFiles/CV_P1.dir/calibrate.cpp.s: cmake_force
 
 # Object files for target CV_P1
 CV_P1_OBJECTS = \
+"CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.o" \
 "CMakeFiles/CV_P1.dir/main.cpp.o" \
 "CMakeFiles/CV_P1.dir/calibrate.cpp.o"
 
 # External object files for target CV_P1
 CV_P1_EXTERNAL_OBJECTS =
 
+CV_P1: CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.o
 CV_P1: CMakeFiles/CV_P1.dir/main.cpp.o
 CV_P1: CMakeFiles/CV_P1.dir/calibrate.cpp.o
 CV_P1: CMakeFiles/CV_P1.dir/build.make
@@ -131,6 +146,7 @@ CV_P1: /usr/local/lib/libopencv_xfeatures2d.so.4.8.0
 CV_P1: /usr/local/lib/libopencv_xobjdetect.so.4.8.0
 CV_P1: /usr/local/lib/libopencv_xphoto.so.4.8.0
 CV_P1: /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.12.8
+CV_P1: /usr/lib/x86_64-linux-gnu/libQt5Gui.so.5.12.8
 CV_P1: /usr/local/lib/libopencv_shape.so.4.8.0
 CV_P1: /usr/local/lib/libopencv_highgui.so.4.8.0
 CV_P1: /usr/local/lib/libopencv_datasets.so.4.8.0
@@ -159,10 +175,9 @@ CV_P1: /usr/local/lib/libopencv_imgproc.so.4.8.0
 CV_P1: /usr/local/lib/libopencv_cudaarithm.so.4.8.0
 CV_P1: /usr/local/lib/libopencv_core.so.4.8.0
 CV_P1: /usr/local/lib/libopencv_cudev.so.4.8.0
-CV_P1: /usr/lib/x86_64-linux-gnu/libQt5Gui.so.5.12.8
 CV_P1: /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.12.8
 CV_P1: CMakeFiles/CV_P1.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable CV_P1"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/c_ubuntu/Repos/CV_test/build-CV_P1-Desktop-Debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable CV_P1"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/CV_P1.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
