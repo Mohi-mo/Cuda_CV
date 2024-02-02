@@ -1,6 +1,8 @@
 #include "calibrate.h"
 
-int CHECKERBOARD[2]{4,7}; // 6 x 9 - число узлов вдоль столбцов и строк шахматной доски
+int r = 6;
+int c = 9;
+int CHECKERBOARD[2]{c,r}; // 6 x 9 - число узлов вдоль столбцов и строк шахматной доски
 
 void calibrate_camera(std::vector<cv::String> images, std::string path, mono_output_par_t &mono_out){
     // Creating vector to store vectors of 3D points for each checkerboard image
@@ -124,5 +126,5 @@ void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, 
                                           c1_images[0].size(), outp_params.R, outp_params.T,
                                           outp_params.E, outp_params.F, outp_params.rvecs,
                                           outp_params.tvecs, outp_params.perViewErrors,
-                                          CALIB_FIX_INTRINSIC, criteria);
+                                          CALIB_ZERO_TANGENT_DIST, criteria);
 }

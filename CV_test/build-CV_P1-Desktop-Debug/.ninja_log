@@ -1,0 +1,9 @@
+# ninja log v5
+0	21	1706875882643693893	CV_P1_autogen/timestamp	3d25ee99ef0b24ae
+0	21	1706875882643693893	CV_P1_autogen/mocs_compilation.cpp	3d25ee99ef0b24ae
+0	21	1706875882643693893	/home/labd/CV/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/timestamp	3d25ee99ef0b24ae
+0	21	1706875882643693893	/home/labd/CV/CV_test/build-CV_P1-Desktop-Debug/CV_P1_autogen/mocs_compilation.cpp	3d25ee99ef0b24ae
+21	28	1706875882655693765	CMakeFiles/CV_P1.dir/CV_P1_autogen/mocs_compilation.cpp.o	5b0ce1e1e17a5cca
+22	1245	1706875883871680778	CMakeFiles/CV_P1.dir/main.cpp.o	1df42797134dcd9a
+22	1457	1706875884083678513	CMakeFiles/CV_P1.dir/calibrate.cpp.o	dd9ab828df70a0aa
+1457	1712	1706875884335675821	CV_P1	8478e0c800ea23bc
