@@ -3,6 +3,7 @@
 #define CALIBRATE_H
 
 #include <iostream>
+//#include <linux/delay.h>
 
 #include "opencv2/core.hpp"
 #include <opencv2/imgcodecs.hpp>
@@ -41,10 +42,15 @@ typedef struct StereOutputParams{
     cv::Mat tvecs;          // Кортеж векторов смещения для перехода из базиса объекта в базис камеры
     cv::Mat perViewErrors;  // Вектор среднеквадратической ошибки перепроецирования для каждого вида
     double RMS;             // Значение среднеквадратической ошибки перепроецирования
-}cam_par_output_t;
+}stereo_output_par_t;
 
 
-void calibrate_camera(std::vector<cv::String> images, std::string path, mono_output_par_t &mono_out);
-void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, std::string path1, std::string path2, cam_par_output_t &outp_params);
+// Функция калибровки одной камеры
+void calibrate_camera(std::vector<cv::String> images, std::string path, std::string dataset_name,
+                      int checkerboard_w, int checkerboard_h, mono_output_par_t &mono_out);
+
+// Функция калибровки стереопары
+void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, std::string path1, std::string path2,
+                      int checkerboard_w, int checkerboard_h, stereo_output_par_t &outp_params);
 
 #endif // CALLIBRATE_H
