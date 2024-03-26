@@ -51,6 +51,6 @@ void calibrate_camera(std::vector<cv::String> images, std::string path, std::str
 
 // Функция калибровки стереопары
 void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, std::string path1, std::string path2,
-                      int checkerboard_w, int checkerboard_h, stereo_output_par_t &outp_params);
+                      std::string dataset_name, int checkerboard_w, int checkerboard_h, stereo_output_par_t &outp_params);
 
 #endif // CALLIBRATE_H

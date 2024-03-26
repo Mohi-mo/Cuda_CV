@@ -1,12 +1,8 @@
 #include "calibrate.h"
 
-// rxc
-// 4x7 - lab_set
-// 6x9 - T-rep
-
-int r = 4;
-int c = 7;
-int CHECKERBOARD[2]{c,r}; // 6 x 9 - число узлов вдоль столбцов и строк шахматной доски
+//int r = 4;
+//int c = 7;
+//int CHECKERBOARD[2]{c,r}; // 6 x 9 - число узлов вдоль столбцов и строк шахматной доски
 
 void calibrate_camera(std::vector<cv::String> images, std::string path, std::string dataset_name,
                       int checkerboard_c, int checkerboard_r, mono_output_par_t &mono_out){
@@ -71,36 +67,31 @@ void calibrate_camera(std::vector<cv::String> images, std::string path, std::str
 
     mono_out.RMS = cv::calibrateCamera(objpoints, imgpoints, cv::Size(gray.rows,gray.cols),
                                 mono_out.cameraMatrix, mono_out.distCoeffs, mono_out.rvecs, mono_out.tvecs,
-                                mono_out.stdDevIntrinsics, mono_out.stdDevExtrinsics, mono_out.perViewErrors, CALIB_FIX_PRINCIPAL_POINT, criteria);
+                                mono_out.stdDevIntrinsics, mono_out.stdDevExtrinsics, mono_out.perViewErrors, 0, criteria);
 
     std::string filename = dataset_name + "_" +"camera_parameters.yml";
-        cv::FileStorage fs;
+    cv::FileStorage fs;
 
-        if (fs.open(filename, cv::FileStorage::READ)) {
-            std::cout << "Файл с именем " << filename << " существует." << std::endl;
-            fs.release();
-        } else {
-            fs.open(filename, cv::FileStorage::WRITE);
-            if (fs.isOpened()) {
-                fs << "cameraMatrix" << mono_out.cameraMatrix;
-                fs << "distCoeffs" << mono_out.distCoeffs;
-                fs << "PerViewErrors" << mono_out.perViewErrors;
-                fs << "STDIntrinsics" << mono_out.stdDevIntrinsics;
-                fs << "STDExtrinsics" << mono_out.stdDevExtrinsics;
-                fs << "RotationVector" << mono_out.rvecs;
-                fs << "TranslationVector" << mono_out.tvecs;
-                fs << "RMS" << mono_out.RMS;
-                fs.release();
-                std::cout << "Файл " << filename << " был создан и записан." << std::endl;
-            } else {
-                std::cerr << "Ошибка при открытии файла " << filename << " для записи." << std::endl;
-            }
-        }
+    fs.open(filename, cv::FileStorage::WRITE);
+    if (fs.isOpened()) {
+        fs << "cameraMatrix" << mono_out.cameraMatrix;
+        fs << "distCoeffs" << mono_out.distCoeffs;
+        fs << "PerViewErrors" << mono_out.perViewErrors;
+        fs << "STDIntrinsics" << mono_out.stdDevIntrinsics;
+        fs << "STDExtrinsics" << mono_out.stdDevExtrinsics;
+        fs << "RotationVector" << mono_out.rvecs;
+        fs << "TranslationVector" << mono_out.tvecs;
+        fs << "RMS" << mono_out.RMS;
+        fs.release();
+        std::cout << "Файл " << filename << " был создан и записан." << std::endl;
+    } else {
+        std::cerr << "Ошибка при открытии файла " << filename << " для записи." << std::endl;
+    }
 }
 
 
 void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, std::string path1, std::string path2,
-                      int checkerboard_c, int checkerboard_r, stereo_output_par_t &outp_params){
+                      std::string dataset_name, int checkerboard_c, int checkerboard_r, stereo_output_par_t &outp_params){
 
     std::vector<std::vector<cv::Point3f> > objpoints;
     std::vector<std::vector<cv::Point2f>> imgpoints_left, imgpoints_right;
@@ -141,46 +132,65 @@ void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, 
             cv::cornerSubPix(gray2, corners2, cv::Size(11, 11), cv::Size(-1, -1), criteria);
 
             cv::drawChessboardCorners(c1_images[i], cv::Size(checkerboard_c, checkerboard_r), corners1, c_ret1);
-            //cv::imshow("img", c1_images[i]);
+            cv::imshow("img", c1_images[i]);
 
             cv::drawChessboardCorners(c2_images[i], cv::Size(checkerboard_c, checkerboard_r), corners2, c_ret2);
-            //cv::imshow("img2", c2_images[i]);
-            //cv::waitKey(0);
+            cv::imshow("img2", c2_images[i]);
+            cv::waitKey(0);
 
             objpoints.push_back(objp);
             imgpoints_left.push_back(corners1);
             imgpoints_right.push_back(corners2);
         }
     }
-
+/*
     outp_params.RMS = cv::stereoCalibrate(objpoints, imgpoints_left, imgpoints_right,
                                           outp_params.cameraM1, outp_params.distCoeffs1,
                                           outp_params.cameraM2, outp_params.distCoeffs2,
                                           c1_images[0].size(), outp_params.R, outp_params.T,
                                           outp_params.E, outp_params.F, outp_params.rvecs,
                                           outp_params.tvecs, outp_params.perViewErrors,
-                                          CALIB_ZERO_TANGENT_DIST, criteria);
+                                          CALIB_ZERO_DISPARITY, criteria);
 
-    std::string filename = "stereo_camera_parameters.yml";
-        cv::FileStorage stereo_fs;
+    stereoRectify( InputArray cameraMatrix1, InputArray distCoeffs1,
+                                 InputArray cameraMatrix2, InputArray distCoeffs2,
+                                 Size imageSize, InputArray R, InputArray T,
+                                 OutputArray R1, OutputArray R2,
+                                 OutputArray P1, OutputArray P2,
+                                 OutputArray Q, int flags = CALIB_ZERO_DISPARITY,
+                                 double alpha = -1, Size newImageSize = Size(),
+                                 CV_OUT Rect* validPixROI1 = 0, CV_OUT Rect* validPixROI2 = 0 );
 
-        stereo_fs.open(filename, cv::FileStorage::WRITE);
-        if (stereo_fs.isOpened()) {
-            stereo_fs << "cameraMatrixL"              << outp_params.cameraM1;
-            stereo_fs << "cameraMatrixR"              << outp_params.cameraM2;
-            stereo_fs << "DistorsionCoeffsL"          << outp_params.distCoeffs1;
-            stereo_fs << "DistorsionCoeffsR"          << outp_params.distCoeffs2;
-            stereo_fs << "RotationMatrix"             << outp_params.R;
-            stereo_fs << "TranslationMatrix"          << outp_params.T;
-            stereo_fs << "EssentialMatrix"            << outp_params.E;
-            stereo_fs << "FundamentalMatrix"          << outp_params.F;
-            stereo_fs << "VectorOfRotationVectors"    << outp_params.rvecs;
-            stereo_fs << "VectorOfTranslationVectors" << outp_params.tvecs;
-            stereo_fs << "PerViewErrors"              << outp_params.perViewErrors;
-            stereo_fs << "RMS"                        << outp_params.RMS;
-            stereo_fs.release();
-            std::cout << "File " << filename << " was created." << std::endl;
-        } else {
-            std::cerr << "Error while reading the " << filename << "." << std::endl;
-        }
+*/
+    outp_params.RMS = cv::stereoCalibrate(objpoints, imgpoints_left, imgpoints_right,
+                                          outp_params.cameraM1, outp_params.distCoeffs1,
+                                          outp_params.cameraM2, outp_params.distCoeffs2,
+                                          c1_images[0].size(), outp_params.R, outp_params.T,
+                                          outp_params.E, outp_params.F, outp_params.rvecs,
+                                          outp_params.tvecs, outp_params.perViewErrors,
+                                          CALIB_FIX_INTRINSIC, criteria);
+
+
+    std::string filename = dataset_name +"_stereo_camera_parameters.yml";
+    cv::FileStorage stereo_fs;
+
+    stereo_fs.open(filename, cv::FileStorage::WRITE);
+    if (stereo_fs.isOpened()) {
+        stereo_fs << "cameraMatrixL"              << outp_params.cameraM1;
+        stereo_fs << "cameraMatrixR"              << outp_params.cameraM2;
+        stereo_fs << "DistorsionCoeffsL"          << outp_params.distCoeffs1;
+        stereo_fs << "DistorsionCoeffsR"          << outp_params.distCoeffs2;
+        stereo_fs << "RotationMatrix"             << outp_params.R;
+        stereo_fs << "TranslationMatrix"          << outp_params.T;
+        stereo_fs << "EssentialMatrix"            << outp_params.E;
+        stereo_fs << "FundamentalMatrix"          << outp_params.F;
+        stereo_fs << "VectorOfRotationVectors"    << outp_params.rvecs;
+        stereo_fs << "VectorOfTranslationVectors" << outp_params.tvecs;
+        stereo_fs << "PerViewErrors"              << outp_params.perViewErrors;
+        stereo_fs << "RMS"                        << outp_params.RMS;
+        stereo_fs.release();
+        std::cout << "File " << filename << " was created." << std::endl;
+    } else {
+        std::cerr << "Error while reading the " << filename << "." << std::endl;
+    }
 }
