@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_executable(CV_P1 main.cpp calibrate.cpp)
+add_executable(CV_P1 triangulate.cpp  calibrate.cpp main.cpp)
 
 include_directories($CMAKE_SOURCE_DIR)
 

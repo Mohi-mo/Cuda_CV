@@ -98,6 +98,12 @@
 			"Mu",
 			"EWIEGA46WW/moc_calibrate.cpp",
 			null
+		],
+		[
+			"/home/labd/CV/CV_test/CV_P1/triangulate.h",
+			"Mu",
+			"EWIEGA46WW/moc_triangulate.cpp",
+			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
@@ -155,7 +161,8 @@
 	"SOURCES" : 
 	[
 		[ "/home/labd/CV/CV_test/CV_P1/calibrate.cpp", "Mu", null ],
-		[ "/home/labd/CV/CV_test/CV_P1/main.cpp", "Mu", null ]
+		[ "/home/labd/CV/CV_test/CV_P1/main.cpp", "Mu", null ],
+		[ "/home/labd/CV/CV_test/CV_P1/triangulate.cpp", "Mu", null ]
 	],
 	"VERBOSITY" : 0
 }

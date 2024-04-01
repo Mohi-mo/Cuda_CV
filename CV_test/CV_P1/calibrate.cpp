@@ -1,8 +1,5 @@
 #include "calibrate.h"
 
-//int r = 4;
-//int c = 7;
-//int CHECKERBOARD[2]{c,r}; // 6 x 9 - число узлов вдоль столбцов и строк шахматной доски
 
 void calibrate_camera(std::vector<cv::String> images, std::string path, std::string dataset_name,
                       int checkerboard_c, int checkerboard_r, mono_output_par_t &mono_out){
@@ -89,9 +86,9 @@ void calibrate_camera(std::vector<cv::String> images, std::string path, std::str
     }
 }
 
-
 void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, std::string path1, std::string path2,
-                      std::string dataset_name, int checkerboard_c, int checkerboard_r, stereo_output_par_t &outp_params){
+                      std::string dataset_name, int checkerboard_c, int checkerboard_r,
+                      stereo_output_par_t &outp_params){
 
     std::vector<std::vector<cv::Point3f> > objpoints;
     std::vector<std::vector<cv::Point2f>> imgpoints_left, imgpoints_right;
@@ -143,25 +140,7 @@ void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, 
             imgpoints_right.push_back(corners2);
         }
     }
-/*
-    outp_params.RMS = cv::stereoCalibrate(objpoints, imgpoints_left, imgpoints_right,
-                                          outp_params.cameraM1, outp_params.distCoeffs1,
-                                          outp_params.cameraM2, outp_params.distCoeffs2,
-                                          c1_images[0].size(), outp_params.R, outp_params.T,
-                                          outp_params.E, outp_params.F, outp_params.rvecs,
-                                          outp_params.tvecs, outp_params.perViewErrors,
-                                          CALIB_ZERO_DISPARITY, criteria);
 
-    stereoRectify( InputArray cameraMatrix1, InputArray distCoeffs1,
-                                 InputArray cameraMatrix2, InputArray distCoeffs2,
-                                 Size imageSize, InputArray R, InputArray T,
-                                 OutputArray R1, OutputArray R2,
-                                 OutputArray P1, OutputArray P2,
-                                 OutputArray Q, int flags = CALIB_ZERO_DISPARITY,
-                                 double alpha = -1, Size newImageSize = Size(),
-                                 CV_OUT Rect* validPixROI1 = 0, CV_OUT Rect* validPixROI2 = 0 );
-
-*/
     outp_params.RMS = cv::stereoCalibrate(objpoints, imgpoints_left, imgpoints_right,
                                           outp_params.cameraM1, outp_params.distCoeffs1,
                                           outp_params.cameraM2, outp_params.distCoeffs2,
@@ -193,4 +172,34 @@ void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, 
     } else {
         std::cerr << "Error while reading the " << filename << "." << std::endl;
     }
+}
+
+// Отображение параметров камеры
+void print_mono_camera_parameters(std::string name, mono_output_par_t mono_struct){
+    cout << "\n\n\t" << name << "---------------------------------" << endl;
+    cout << "cameraMatrix: "        << mono_struct.cameraMatrix     << endl;
+    cout << "distCoeffs: "         << mono_struct.distCoeffs        << endl;
+    //cout << "Per view errors: "     << mono_struct.perViewErrors    << endl;
+    //cout << "STD Intrinsics: "      << mono_struct.stdDevIntrinsics << endl;
+    //cout << "STD Extrinsics: "      << mono_struct.stdDevExtrinsics << endl;
+    //cout << "Rotation vector: "     << mono_struct.rvecs            << endl;
+    //cout << "Translation vector: "  << mono_struct.tvecs            << endl;
+    cout << "RMS: "                 << mono_struct.RMS              << endl;
+}
+
+// Отображение параметров стерео камеры
+void print_stereo_camera_parameters(stereo_output_par_t stereo_struct){
+    cout << "\n\n\t\t Both cameras" << "------------------------------------" << endl;
+    cout << "cameraMatrix L: "                << stereo_struct.cameraM1       << endl;
+    cout << "cameraMatrix R: "                << stereo_struct.cameraM2       << endl;
+    cout << "Distorsion coeffs L: "           << stereo_struct.distCoeffs1    << endl;
+    cout << "Distorsion coeffs R: "           << stereo_struct.distCoeffs2    << endl;
+    cout << "Rotation matrix: "               << stereo_struct.R              << endl;
+    cout << "Translation matrix: "            << stereo_struct.T              << endl;
+    cout << "Essential matrix: "              << stereo_struct.E              << endl;
+    cout << "Fundamental matrix: "            << stereo_struct.F              << endl;
+    //cout << "Vector of rotation vectors: "    << stereo_struct.rvecs          << endl;
+    //cout << "Vector of translation vectors: " << stereo_struct.tvecs          << endl;
+    //cout << "Per view errors: "               << stereo_struct.perViewErrors  << endl;
+    cout << "RMS: "                           << stereo_struct.RMS            << endl;
 }

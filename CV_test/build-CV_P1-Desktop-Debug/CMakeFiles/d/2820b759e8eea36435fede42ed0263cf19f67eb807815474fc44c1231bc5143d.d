@@ -3,6 +3,8 @@ CV_P1_autogen/timestamp: \
   /home/labd/CV/CV_test/CV_P1/calibrate.cpp \
   /home/labd/CV/CV_test/CV_P1/calibrate.h \
   /home/labd/CV/CV_test/CV_P1/main.cpp \
+  /home/labd/CV/CV_test/CV_P1/triangulate.cpp \
+  /home/labd/CV/CV_test/CV_P1/triangulate.h \
   CMakeFiles/3.22.1/CMakeCXXCompiler.cmake \
   CMakeFiles/3.22.1/CMakeSystem.cmake \
   /usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfig.cmake \

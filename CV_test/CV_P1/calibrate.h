@@ -53,4 +53,10 @@ void calibrate_camera(std::vector<cv::String> images, std::string path, std::str
 void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, std::string path1, std::string path2,
                       std::string dataset_name, int checkerboard_w, int checkerboard_h, stereo_output_par_t &outp_params);
 
+// Отображение параметров камеры
+void print_mono_camera_parameters(std::string name, mono_output_par_t mono_struct);
+
+// Отображение параметров стерео камеры
+void print_stereo_camera_parameters(stereo_output_par_t stereo_struct);
+
 #endif // CALLIBRATE_H
