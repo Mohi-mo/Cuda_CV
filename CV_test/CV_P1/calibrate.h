@@ -50,8 +50,15 @@ void calibrate_camera(std::vector<cv::String> images, std::string path, std::str
                       int checkerboard_w, int checkerboard_h, mono_output_par_t &mono_out);
 
 // Функция калибровки стереопары
-void calibrate_stereo(std::vector<cv::String> im1, std::vector<cv::String> im2, std::string path1, std::string path2,
-                      std::string dataset_name, int checkerboard_w, int checkerboard_h, stereo_output_par_t &outp_params);
+void calibrate_stereo(cv::Mat newCameraML, cv::Mat newCameraMR, std::vector<cv::String> im1, std::vector<cv::String> im2,
+                      std::string path1, std::string path2, std::string dataset_name,
+                      int checkerboard_w, int checkerboard_h, stereo_output_par_t &outp_params);
+
+// Функция калбировки стереопары (моно + стерео)
+void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String> imagesR,
+                         std::string pathL,std::string pathR, std::string dataset_name,
+                         int checkerboard_c, int checkerboard_r,
+                         mono_output_par_t &mono_outL,mono_output_par_t &mono_outR, stereo_output_par_t &st_out);
 
 // Отображение параметров камеры
 void print_mono_camera_parameters(std::string name, mono_output_par_t mono_struct);

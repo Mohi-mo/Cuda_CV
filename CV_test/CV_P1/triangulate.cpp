@@ -32,9 +32,10 @@ void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight,
         cv::imshow("Disparity Map", disparity);
         cv::minMaxLoc(disparity, &local_min, &local_max);
 
+        cv::normalize(disparityMap, depthMap, 0, 255, cv::NORM_MINMAX, CV_8UC1);
         //depthMap = focalLength * baseline / (disparity);
         //cv::normalize(depthMap, depthMap, local_min, local_max, cv::NORM_MINMAX);
-        disparity.convertTo(depthMap, CV_8UC1, 255*(local_max-local_min));
+        //disparity.convertTo(depthMap, CV_8UC1, 255*(local_max-local_min));
 
         cv::applyColorMap(depthMap, coloredDepthMap, cv::COLORMAP_JET);
         cv::imshow("Depth Map", coloredDepthMap);

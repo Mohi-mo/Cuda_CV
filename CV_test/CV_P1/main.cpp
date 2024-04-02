@@ -1,7 +1,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 //#include "opencv2/core.hpp"
-#include <opencv2/calib3d/calib3d.hpp>
+//#include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -19,9 +19,11 @@ using namespace cuda;
 
 
 cv::Mat rectifiedLeft, rectifiedRight;
-cv::Mat mapLx, mapLy, mapRx, mapRy;
+cv::Mat mapLx, mapLy, mapRx, mapRy, Q;
 cv::Mat P1, P2;
 cv::Mat points3D;
+cv::Mat image3D;
+cv::Mat disparity;
 
 stereo_output_par_t stereo_par;
 stereo_match_t SGBM_par;
@@ -55,7 +57,6 @@ static void on_trackbar4( int, void* )
 }
 */
 
-// ------------------------------------------------
 void on_trackbar5( int, void* )
 {
   stereo->setPreFilterCap(SGBM_par.preFilterCap);
@@ -122,34 +123,24 @@ int cameraRecv(cv::Mat InputLeftIm, cv::Mat InputRigthIm){
     return 0;
 }
 
-/*
-void onMouseClick(int event, int x, int y, int flags, void* userdata){
-    if (event == cv::EVENT_LBUTTONDOWN) {
-        cv::Mat image3D = *static_cast<cv::Mat*>(userdata);
-        point3D = image3D.at<cv::Vec3f>(y, x);
-
-        cv::circle(rectifiedLeft, cv::Point(x, y), 5, cv::Scalar(0, 0, 255), -1);
-        cv::circle(rectifiedLeft, cv::Point(point3D[0], point3D[1]), 5, cv::Scalar(255, 0, 0), -1);
-
-        std::cout << "Clicked 2D Point: (" << x << ", " << y << ")" << std::endl;
-        std::cout << "3D Point: (" << point3D[0] << ", " << point3D[1] << ", " << point3D[2] << ")" << std::endl;
-        cv::imshow("3D points on image", rectifiedLeft);
-    }
-}
-*/
-
 void onMouseClick(int event, int x, int y, int flags, void* userdata){
 
     std::vector<cv::Point2f> point2DL, point2DR;
+    std::vector<cv::Point2f> newpoint2DL, newpoint2DR;
 
     if (event == cv::EVENT_LBUTTONDOWN) {
         point2DL.push_back(cv::Point2f(x,y));
-        point2DR.push_back(cv::Point2f(mapRx.at<float>(y,x), mapRy.at<float>(y,x)));
 
-        std::cout << "2D Points left: " << point2DL << " and right: " << point2DR << std::endl;
-        cv::triangulatePoints(P1, P2, point2DL, point2DR, points3D);
+        //point2DR.push_back(cv::Point2f(mapRx.at<float>(y,x), mapRy.at<float>(y,x)));
 
-        for(int i = 0; i< points3D.cols; i++){
+        //std::cout << "2D Points left: " << point2DL << " and right: " << point2DR << std::endl;
+        cv::reprojectImageTo3D(disparity, image3D, Q, false, -1);
+        //cv::sort(image3D, points3D, cv::SORT_ASCENDING+cv::SORT_EVERY_ROW+cv::SORT_EVERY_COLUMN);
+        //std::cout << "3D Image: " << image3D << std::endl;
+        //point2DR.push_back(cv::Point2f(image3D.at<float>(y,x), mapRy.at<float>(y,x)));
+        //cv::triangulatePoints(P1, P2, point2DL, point2DR);
+        /*
+        for(int i = 0; i< image3D.cols; i++){
             cv::Point3f point3D(points3D.at<float>(0, i) / points3D.at<float>(3, i),
                                 points3D.at<float>(1, i) / points3D.at<float>(3, i),
                                 points3D.at<float>(2, i) / points3D.at<float>(3, i));
@@ -159,12 +150,25 @@ void onMouseClick(int event, int x, int y, int flags, void* userdata){
             points3D.at<float>(1, i) = point3D.y;
             points3D.at<float>(2, i) = point3D.z;
         }
+        */
 
+        // Проекция 3D точки на 2D изображение левой камеры
+        std::vector<cv::Point3f> point3D(1, cv::Point3f(image3D.at<cv::Vec3f>(y, x)));
+        std::vector<cv::Point2f> projectedPoints;
+
+        cv::projectPoints(point3D, cv::Mat::zeros(3, 1, CV_64F), cv::Mat::zeros(3, 1, CV_64F),
+                          stereo_par.cameraM1, stereo_par.distCoeffs1, projectedPoints);
+
+        std::cout << "3D Point: " << point3D << std::endl;
+
+        // Отобразить 3D точку на изображении
+        cv::circle(rectifiedLeft, projectedPoints[0], 5, cv::Scalar(255, 0, 0), -1);
         cv::circle(rectifiedLeft, cv::Point(x, y), 5, cv::Scalar(0, 0, 255), -1);
-        //cv::circle(rectifiedRight, cv::Point(point2DR[0], point2DR[1]), 5, cv::Scalar(0, 0, 255), -1);
-        cv::circle(rectifiedLeft, cv::Point(points3D.at<float>(0,0), points3D.at<float>(1,0)), 5, cv::Scalar(255, 0, 0), -1);
+        //cv::circle(rectifiedRight, cv::Point(newpoint2DR[0].x, newpoint2DR[0].y), 5, cv::Scalar(0, 255, 0), -1);
+        //cv::circle(rectifiedLeft, cv::Point(points3D.at<float>(0,0), points3D.at<float>(1,0)), 5, cv::Scalar(255, 0, 0), -1);
 
         cv::imshow("3D points on image", rectifiedLeft);
+        cv::imshow("Points on right image: ", rectifiedRight);
     }
 }
 
@@ -174,12 +178,11 @@ int main(int argc, char** argv) {
 
     std::vector<cv::String> imagesL, imagesR;
     string pathL, pathR;
-    int num_set = 1;
+    int num_set = 4;
     int checkerboard_c;
     int checkerboard_r;
     std::string name;
     bool calibrate = false;
-
 
     if (num_set == 0){
         pathL = "../../Fotoset/T_rep/left";
@@ -194,8 +197,8 @@ int main(int argc, char** argv) {
         checkerboard_r = 4;
         name = "1";
     } else if (num_set == 2) {
-        //pathL = "../../../Fotoset/Left";
-        //pathR = "../../../Fotoset/Right";
+        pathL = "../../../Fotoset/Left";
+        pathR = "../../../Fotoset/Right";
         name = "2";
     } else if (num_set == 3){
         pathL = "../../Fotoset/dataset_res/left";
@@ -203,53 +206,18 @@ int main(int argc, char** argv) {
         checkerboard_c = 9;
         checkerboard_r = 6;
         name = "3";
+    } else if (num_set == 4){
+        pathL = "../../Fotoset/basler_festo/left";
+        pathR = "../../Fotoset/basler_festo/right";
+        checkerboard_c = 9;
+        checkerboard_r = 6;
+        name = "4";
     }
 
-
-    // Предзагрузка параметров калибровки камер
-    cv::FileStorage fs;
-    if (fs.open(name + "_left_camera_parameters.yml", cv::FileStorage::READ)){
-        if (fs.isOpened()){
-            fs["cameraMatrix"] >> mono_parL.cameraMatrix;
-            fs["distCoeffs"] >> mono_parL.distCoeffs;
-            fs["PerViewErrors"] >> mono_parL.perViewErrors;
-            fs["STDIntrinsics"] >> mono_parL.stdDevIntrinsics;
-            fs["STDExtrinsics"] >> mono_parL.stdDevExtrinsics;
-            fs["RotationVector"] >> mono_parL.rvecs;
-            fs["TranslationVector"] >> mono_parL.tvecs;
-            fs["RMS"] >> mono_parL.RMS;
-            fs.release();
-          }
-      } else {
-        cout << "Left calibration procedure is running..." << endl;
-        calibrate_camera(imagesL, pathL, name+ "_left", checkerboard_c,checkerboard_r, mono_parL);
-    }
-
-    if (fs.open(name + "_right_camera_parameters.yml", cv::FileStorage::READ)){
-        if (fs.isOpened()){
-          fs["cameraMatrix"] >> mono_parR.cameraMatrix;
-          fs["distCoeffs"] >> mono_parR.distCoeffs;
-          fs["PerViewErrors"] >> mono_parR.perViewErrors;
-          fs["STDIntrinsics"] >> mono_parR.stdDevIntrinsics;
-          fs["STDExtrinsics"] >> mono_parR.stdDevExtrinsics;
-          fs["RotationVector"] >> mono_parR.rvecs;
-          fs["TranslationVector"] >> mono_parR.tvecs;
-          fs["RMS"] >> mono_parR.RMS;
-          fs.release();
-        }
-    } else {
-        cout << "Right calibration procedure is running..." << endl;
-        calibrate_camera(imagesR, pathR, name + "_right", checkerboard_c,checkerboard_r, mono_parR);
-    }
-
-    // Show cameras parameters
-    print_mono_camera_parameters("Left_camera", mono_parL);
-    print_mono_camera_parameters("Right_camera", mono_parR);
 
     // Калибровка стереопары
-    //stereo_output_par_t stereo_par;
     cv::FileStorage stereo_fs;
-    if (stereo_fs.open(name + "_stereo_camera_parameters.yml", cv::FileStorage::READ) && (!calibrate)){
+    if (stereo_fs.open("../../Calibration_parameters(stereo)/A" + name + "_stereo_camera_parameters.yml", cv::FileStorage::READ) && (!calibrate)){
         if (stereo_fs.isOpened()){
             stereo_fs["cameraMatrixL"]              >> stereo_par.cameraM1;
             stereo_fs["cameraMatrixR"]              >> stereo_par.cameraM2;
@@ -267,44 +235,40 @@ int main(int argc, char** argv) {
           }
       } else {
         cout << "Stereo calibration procedure is running..." << endl;
-        calibrate_stereo(imagesL, imagesR, pathL, pathR, name, checkerboard_c,checkerboard_r, stereo_par);
+        calibrate_with_mono(imagesL,imagesR, pathL, pathR, name, checkerboard_c, checkerboard_r, mono_parL, mono_parR, stereo_par);
     }
 
     // Вывод параметров стереопары
     print_stereo_camera_parameters(stereo_par);
 
-    // Загрузка калибровочных данных камер
-    cv::Mat cameraMatrixL = stereo_par.cameraM1;
-    cv::Mat cameraMatrixR = stereo_par.cameraM2;
-    cv::Mat distCoeffsL = stereo_par.distCoeffs1;
-    cv::Mat distCoeffsR = stereo_par.distCoeffs2;
-    cv::Mat R = stereo_par.R;
-    cv::Mat T = stereo_par.T;
-
     // Загрузка левого и правого изображений
-    cv::Mat imageLeft = cv::imread("../../Fotoset/Stereo/tests/left/L88.png");
-    cv::Mat imageRight = cv::imread("../../Fotoset/Stereo/tests/right/R88.png");
+    //cv::Mat imageLeft = cv::imread("../../Fotoset/Stereo/tests/left/L88.png");
+    //cv::Mat imageRight = cv::imread("../../Fotoset/Stereo/tests/right/R88.png");
     //cv::Mat imageLeft = cv::imread("../../Fotoset/Stereo/tests/tele/left/R87.png");
     //cv::Mat imageRight = cv::imread("../../Fotoset/Stereo/tests/tele/right/L87.png");
     //cv::Mat imageLeft = cv::imread("../../Fotoset/Stereo/tests/any/view0.png");
     //cv::Mat imageRight = cv::imread("../../Fotoset/Stereo/tests/any/view1.png");
+
+    //cv::Mat imageLeft = cv::imread("../../Fotoset/lab_set/left/left_var9_7.png");
+    //cv::Mat imageRight = cv::imread("../../Fotoset/lab_set/right/right_var9_7.png");
+    cv::Mat imageLeft = cv::imread("../../Fotoset/Stereo/basler_festo/stereo_test/left/L1.png");
+    cv::Mat imageRight = cv::imread("../../Fotoset/Stereo/basler_festo/stereo_test/right/R1.png");
 
     cv::Mat grayImageLeft, grayImageRight;
     cv::cvtColor(imageLeft, grayImageLeft, cv::COLOR_BGR2GRAY);
     cv::cvtColor(imageRight, grayImageRight, cv::COLOR_BGR2GRAY);
 
     //cv::Mat Q, R1, R2, P1, P2;
-    cv::Mat Q, R1, R2;
-    cv::stereoRectify(cameraMatrixL, distCoeffsL, cameraMatrixR, distCoeffsR,
-                      grayImageLeft.size(), R, T, R1, R2, P1, P2, Q, CALIB_ZERO_DISPARITY);
-
+    cv::Mat R1, R2;
+    cv::stereoRectify(stereo_par.cameraM1, stereo_par.distCoeffs1, stereo_par.cameraM2, stereo_par.distCoeffs2,
+                      grayImageLeft.size(), stereo_par.R, stereo_par.T, R1, R2, P1, P2, Q, CALIB_ZERO_DISPARITY);
 
     //cv::Mat mapLx, mapLy, mapRx, mapRy;
-    cv::initUndistortRectifyMap(cameraMatrixL, distCoeffsL, R1, P1,
+    cv::initUndistortRectifyMap(stereo_par.cameraM1, stereo_par.distCoeffs1, R1, P1,
                                 imageLeft.size(), CV_32FC1, mapLx, mapLy);
 
-    cv::initUndistortRectifyMap(cameraMatrixR, distCoeffsR, R2, P2,
-                                grayImageRight.size(), CV_32FC1, mapRx, mapRy);
+    cv::initUndistortRectifyMap(stereo_par.cameraM2, stereo_par.distCoeffs2, R2, P2,
+                                imageLeft.size(), CV_32FC1, mapRx, mapRy);
 
     cv::remap(grayImageLeft, rectifiedLeft, mapLx, mapLy, cv::INTER_LINEAR, cv::BORDER_CONSTANT, 0);
     cv::remap(grayImageRight, rectifiedRight, mapRx, mapRy, cv::INTER_LINEAR, cv::BORDER_CONSTANT, 0);
@@ -330,17 +294,20 @@ int main(int argc, char** argv) {
     cv::createTrackbar("P1", "disparity", &SGBM_par.P1_, 200, on_trackbar3);     // CUDA features
     cv::createTrackbar("P2", "disparity", &SGBM_par.P2_, 200, on_trackbar4);     // CUDA features
 
-    cv::Mat image3D, disparity;
+    //cv::Mat disparity;
     stereo_depth_map(rectifiedLeft, rectifiedRight, stereo_par.cameraM1, stereo_par.cameraM2, stereo_par.T,
                      disparity, SGBM_par.numDisparities, SGBM_par.minDisparity, stereo);
 
     //cv::reprojectImageTo3D(disparity, image3D, Q, false, -1);
 
     cv::cvtColor(rectifiedLeft, rectifiedLeft, cv::COLOR_GRAY2BGR);
+    cv::cvtColor(rectifiedRight, rectifiedRight, cv::COLOR_GRAY2BGR);
 
     cv::imshow("3D points on image", rectifiedLeft);
-    cv::setMouseCallback("3D points on image", onMouseClick, &image3D);
+    cv::setMouseCallback("3D points on image", onMouseClick);
     cv::waitKey(0);
+
+    //cv::imshow("Points on right image: ", rectifiedRight);
 
     cv::destroyAllWindows();
 
