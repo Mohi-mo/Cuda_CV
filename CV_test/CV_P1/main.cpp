@@ -19,9 +19,9 @@ using namespace cuda;
 
 
 cv::Mat rectifiedLeft, rectifiedRight;
-cv::Mat mapLx, mapLy, mapRx, mapRy, Q;
-cv::Mat P1, P2;
-cv::Mat points3D;
+//cv::Mat mapLx, mapLy, mapRx, mapRy, Q;
+//cv::Mat P1, P2;
+cv::Mat point3D;
 cv::Mat image3D;
 cv::Mat disparity;
 
@@ -29,12 +29,17 @@ stereo_output_par_t stereo_par;
 stereo_match_t SGBM_par;
 
 //cv::Ptr<cv::cuda::StereoSGM> stereo = cv::cuda::createStereoSGM();
+//cv::Ptr<cv::cuda::StereoBeliefPropagation> stereo = cv::cuda::createStereoBeliefPropagation();
+
 cv::Ptr<cv::StereoSGBM> stereo = cv::StereoSGBM::create();
+//cv::Ptr<cv::StereoBM> stereo = cv::StereoBM::create();
+
+
 
 void on_trackbar1( int, void* )
 {
-  stereo->setNumDisparities(SGBM_par.numDisparities*16);
-  SGBM_par.numDisparities = SGBM_par.numDisparities*16;
+    stereo->setNumDisparities(SGBM_par.numDisparities*16);
+    SGBM_par.numDisparities = SGBM_par.numDisparities*16;
 }
 
 void on_trackbar2( int, void* )
@@ -87,7 +92,6 @@ void on_trackbar10( int, void* )
 {
   stereo->setMinDisparity(SGBM_par.minDisparity);
 }
-
 // CUDA SGM features
 void on_trackbar3(int, void*){
     stereo->setP1(SGBM_par.P1_);
@@ -96,6 +100,8 @@ void on_trackbar3(int, void*){
 void on_trackbar4(int, void*){
     stereo->setP2(SGBM_par.P2_);
 }
+/*
+*/
 
 
 // Захват видео
@@ -131,11 +137,13 @@ void onMouseClick(int event, int x, int y, int flags, void* userdata){
     if (event == cv::EVENT_LBUTTONDOWN) {
         point2DL.push_back(cv::Point2f(x,y));
 
+        //cv::reprojectImageTo3D(disparity, image3D, Q, false, -1);
+
         //point2DR.push_back(cv::Point2f(mapRx.at<float>(y,x), mapRy.at<float>(y,x)));
 
-        //std::cout << "2D Points left: " << point2DL << " and right: " << point2DR << std::endl;
-        cv::reprojectImageTo3D(disparity, image3D, Q, false, -1);
-        //cv::sort(image3D, points3D, cv::SORT_ASCENDING+cv::SORT_EVERY_ROW+cv::SORT_EVERY_COLUMN);
+        std::cout << "2D Points left: " << point2DL;
+        //std::cout << " and right: " << point2DR << std::endl;
+
         //std::cout << "3D Image: " << image3D << std::endl;
         //point2DR.push_back(cv::Point2f(image3D.at<float>(y,x), mapRy.at<float>(y,x)));
         //cv::triangulatePoints(P1, P2, point2DL, point2DR);
@@ -152,14 +160,15 @@ void onMouseClick(int event, int x, int y, int flags, void* userdata){
         }
         */
 
+
         // Проекция 3D точки на 2D изображение левой камеры
-        std::vector<cv::Point3f> point3D(1, cv::Point3f(image3D.at<cv::Vec3f>(y, x)));
+        std::vector<cv::Point3f> points3D(1, cv::Point3f(image3D.at<cv::Vec3f>(y, x)));
         std::vector<cv::Point2f> projectedPoints;
 
-        cv::projectPoints(point3D, cv::Mat::zeros(3, 1, CV_64F), cv::Mat::zeros(3, 1, CV_64F),
+        cv::projectPoints(points3D, cv::Mat::zeros(3, 1, CV_64F), cv::Mat::zeros(3, 1, CV_64F),
                           stereo_par.cameraM1, stereo_par.distCoeffs1, projectedPoints);
 
-        std::cout << "3D Point: " << point3D << std::endl;
+        std::cout << "3D Point: " << points3D << std::endl;
 
         // Отобразить 3D точку на изображении
         cv::circle(rectifiedLeft, projectedPoints[0], 5, cv::Scalar(255, 0, 0), -1);
@@ -172,46 +181,62 @@ void onMouseClick(int event, int x, int y, int flags, void* userdata){
     }
 }
 
+
 int main(int argc, char** argv) {
     mono_output_par_t mono_parL;
     mono_output_par_t mono_parR;
 
     std::vector<cv::String> imagesL, imagesR;
     string pathL, pathR;
-    int num_set = 4;
+    int num_set = 2;
     int checkerboard_c;
     int checkerboard_r;
     std::string name;
     bool calibrate = false;
 
-    if (num_set == 0){
+    switch (num_set){
+    case 0:
         pathL = "../../Fotoset/T_rep/left";
         pathR = "../../Fotoset/T_rep/right";
         checkerboard_c = 9;
         checkerboard_r = 6;
         name = "0";
-    } else if (num_set == 1) {
+        break;
+    case 1:
         pathL = "../../Fotoset/lab_set/left";
         pathR = "../../Fotoset/lab_set/right";
         checkerboard_c = 7;
         checkerboard_r = 4;
         name = "1";
-    } else if (num_set == 2) {
-        pathL = "../../../Fotoset/Left";
-        pathR = "../../../Fotoset/Right";
+        break;
+    case 2:
+        checkerboard_c = 9;
+        checkerboard_r = 6;
+        pathL = "../../Fotoset/basler_2_png/left";
+        pathR = "../../Fotoset/basler_2_png/right";
         name = "2";
-    } else if (num_set == 3){
+        break;
+    case 3:
         pathL = "../../Fotoset/dataset_res/left";
         pathR = "../../Fotoset/dataset_res/right";
         checkerboard_c = 9;
         checkerboard_r = 6;
         name = "3";
-    } else if (num_set == 4){
+        break;
+    case 4:
         pathL = "../../Fotoset/basler_festo/left";
         pathR = "../../Fotoset/basler_festo/right";
         checkerboard_c = 9;
         checkerboard_r = 6;
         name = "4";
+        break;
+    default:
+        pathL = "../../Fotoset/basler_festo/left";
+        pathR = "../../Fotoset/basler_festo/right";
+        checkerboard_c = 9;
+        checkerboard_r = 6;
+        name = "4";
+        break;
     }
 
 
@@ -251,34 +276,47 @@ int main(int argc, char** argv) {
 
     //cv::Mat imageLeft = cv::imread("../../Fotoset/lab_set/left/left_var9_7.png");
     //cv::Mat imageRight = cv::imread("../../Fotoset/lab_set/right/right_var9_7.png");
-    cv::Mat imageLeft = cv::imread("../../Fotoset/Stereo/basler_festo/stereo_test/left/L1.png");
-    cv::Mat imageRight = cv::imread("../../Fotoset/Stereo/basler_festo/stereo_test/right/R1.png");
+    //cv::Mat imageLeft = cv::imread("../../Fotoset/Stereo/basler_festo/stereo_test/left/L1.png");
+    //cv::Mat imageRight = cv::imread("../../Fotoset/Stereo/basler_festo/stereo_test/right/R1.png");
+
+    cv::Mat imageLeft = cv::imread("../../Fotoset/basler_2_png/test/left/LIm1.png");
+    cv::Mat imageRight = cv::imread("../../Fotoset/basler_2_png/test/right/RIm1.png");
 
     cv::Mat grayImageLeft, grayImageRight;
     cv::cvtColor(imageLeft, grayImageLeft, cv::COLOR_BGR2GRAY);
     cv::cvtColor(imageRight, grayImageRight, cv::COLOR_BGR2GRAY);
 
-    //cv::Mat Q, R1, R2, P1, P2;
-    cv::Mat R1, R2;
+    cv::Mat mapLx, mapLy, mapRx, mapRy;
+    cv::Mat Q, R1, R2, P1, P2;
+    //cv::Mat R1, R2;
     cv::stereoRectify(stereo_par.cameraM1, stereo_par.distCoeffs1, stereo_par.cameraM2, stereo_par.distCoeffs2,
-                      grayImageLeft.size(), stereo_par.R, stereo_par.T, R1, R2, P1, P2, Q, CALIB_ZERO_DISPARITY);
+                      cv::Size(grayImageLeft.cols, grayImageLeft.rows), stereo_par.R, stereo_par.T, R1, R2, P1, P2, Q, cv::CALIB_ZERO_DISPARITY);
+
+    double baseline = Q.at<double>(3,2);
+    double focalLength = Q.at<double>(2,3);
+
+    std::cout << "Baseline: " << baseline << std::endl;
+    std::cout << "Focal length: " << focalLength << std::endl;
 
     //cv::Mat mapLx, mapLy, mapRx, mapRy;
     cv::initUndistortRectifyMap(stereo_par.cameraM1, stereo_par.distCoeffs1, R1, P1,
-                                imageLeft.size(), CV_32FC1, mapLx, mapLy);
+                                cv::Size(imageLeft.cols, imageLeft.rows), CV_32FC1, mapLx, mapLy);
 
     cv::initUndistortRectifyMap(stereo_par.cameraM2, stereo_par.distCoeffs2, R2, P2,
-                                imageLeft.size(), CV_32FC1, mapRx, mapRy);
+                                cv::Size(imageLeft.cols, imageLeft.rows), CV_32FC1, mapRx, mapRy);
 
     cv::remap(grayImageLeft, rectifiedLeft, mapLx, mapLy, cv::INTER_LINEAR, cv::BORDER_CONSTANT, 0);
     cv::remap(grayImageRight, rectifiedRight, mapRx, mapRy, cv::INTER_LINEAR, cv::BORDER_CONSTANT, 0);
 
+
     cv::imshow("Rectified left image", rectifiedLeft);
     cv::imshow("Rectified right image", rectifiedRight);
+
 
     // Creating a named window to be linked to the trackbars
     cv::namedWindow("disparity",cv::WINDOW_NORMAL);
     cv::resizeWindow("disparity",800,600);
+
 
     // Creating trackbars to dynamically update the StereoBM parameters
     cv::createTrackbar("numDisparities", "disparity", &SGBM_par.numDisparities, 64, on_trackbar1);
@@ -294,20 +332,45 @@ int main(int argc, char** argv) {
     cv::createTrackbar("P1", "disparity", &SGBM_par.P1_, 200, on_trackbar3);     // CUDA features
     cv::createTrackbar("P2", "disparity", &SGBM_par.P2_, 200, on_trackbar4);     // CUDA features
 
-    //cv::Mat disparity;
-    stereo_depth_map(rectifiedLeft, rectifiedRight, stereo_par.cameraM1, stereo_par.cameraM2, stereo_par.T,
+    //cuda_stereo_depth_map(rectifiedLeft, rectifiedRight, P1, P2, stereo_par.T,
+    //                     disparity, SGBM_par.numDisparities, SGBM_par.minDisparity, stereo);
+
+    stereo_depth_map(rectifiedLeft, rectifiedRight, P1, P2, stereo_par.T,
                      disparity, SGBM_par.numDisparities, SGBM_par.minDisparity, stereo);
 
-    //cv::reprojectImageTo3D(disparity, image3D, Q, false, -1);
+    //cv::Mat points3D;
+    reprojectImageTo3D(disparity, point3D, Q, false, -1);
+
+    Ptr<FeatureDetector> detector = ORB::create();
+    vector<KeyPoint> keypointsLeft, keypointsRight;
+    detector->detect(rectifiedLeft, keypointsLeft);
+    detector->detect(rectifiedRight, keypointsRight);
+
+    // Сопоставление ключевых точек
+    Ptr<DescriptorExtractor> extractor = ORB::create();
+    Mat descriptorsLeft, descriptorsRight;
+    extractor->compute(rectifiedLeft, keypointsLeft, descriptorsLeft);
+    extractor->compute(rectifiedRight, keypointsRight, descriptorsRight);
+
+    // Использование BFMatcher для сопоставления дескрипторов
+    BFMatcher matcher(NORM_HAMMING);
+    vector<DMatch> matches;
+    matcher.match(descriptorsLeft, descriptorsRight, matches);
+
+    // Отображение сопоставленных точек
+    Mat matchedImage;
+    drawMatches(rectifiedLeft, keypointsLeft, rectifiedRight, keypointsRight, matches, matchedImage);
+
+    // Вывод результатов
+    cv::imshow("Matched Points", matchedImage);
 
     cv::cvtColor(rectifiedLeft, rectifiedLeft, cv::COLOR_GRAY2BGR);
     cv::cvtColor(rectifiedRight, rectifiedRight, cv::COLOR_GRAY2BGR);
 
     cv::imshow("3D points on image", rectifiedLeft);
     cv::setMouseCallback("3D points on image", onMouseClick);
-    cv::waitKey(0);
 
-    //cv::imshow("Points on right image: ", rectifiedRight);
+    cv::waitKey(0);
 
     cv::destroyAllWindows();
 

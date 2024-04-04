@@ -43,9 +43,9 @@ int mode = cv::StereoSGBM::MODE_SGBM; //  MODE_SGBM
 
 typedef struct StereoAlgorithmParams{
     int minDisparity = 0;  // 40
-    int numDisparities = 24; // or 2 - 15 for CUDA
+    int numDisparities = 27; // or 1 for CUDA
     int blockSize = 3; // 0
-    int P1_ = 1;
+    int P1_ = 10;
     int P2_ = 1;
     int disp12MaxDiff = 25;
     int preFilterCap = 40;
@@ -55,10 +55,27 @@ typedef struct StereoAlgorithmParams{
     int mode = cv::StereoSGBM::MODE_SGBM; //  MODE_SGBM
 }stereo_match_t;
 
+
 void stereo_depth_map(cv::Mat rectified_image_left, cv::Mat rectified_image_right,
                       cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
                       cv::Mat T, cv::Mat &disparity, int numDisparity, int minDisparity, cv::Ptr<cv::StereoSGBM> stereo);
 
-void cuda_stereo_depth_map();
+void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight,
+                      cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
+                      cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity,
+                      cv::Ptr<cv::StereoBM> stereo);
+
+// CUDA -------------------------------------------------------------------------------------------------------
+void cuda_stereo_depth_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,
+                           cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
+                           cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity,
+                           cv::Ptr<cv::cuda::StereoSGM> stereo);
+
+
+void cuda_stereo_depth_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,
+                           cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
+                           cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity,
+                           cv::Ptr<cv::cuda::StereoBeliefPropagation> stereo);
+
 
 #endif // TRIANGULATE_H

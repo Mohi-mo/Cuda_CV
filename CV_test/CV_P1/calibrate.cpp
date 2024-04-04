@@ -65,12 +65,9 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
     //cv::destroyAllWindows();
     cv::TermCriteria criteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON);
 
-    mono_outL.RMS = cv::calibrateCamera(objpoints, imgpointsL, cv::Size(grayL.rows,grayL.cols),
+    mono_outL.RMS = cv::calibrateCamera(objpoints, imgpointsL, cv::Size(grayL.cols,grayL.rows),
                                 mono_outL.cameraMatrix, mono_outL.distCoeffs, mono_outL.rvecs, mono_outL.tvecs,
                                 mono_outL.stdDevIntrinsics, mono_outL.stdDevExtrinsics, mono_outL.perViewErrors, 0, criteria);
-
-    //mono_outL.cameraMatrix = cv::getOptimalNewCameraMatrix(mono_outL.cameraMatrix, mono_outL.distCoeffs, cv::Size(grayL.rows, grayL.cols),
-    //                             1, grayL.size(),0);
 
     std::string filenameL = "../../Calibration_parameters(mono)/A" + dataset_name + "_left_" +"camera_parameters.yml";
     cv::FileStorage fs;
@@ -92,12 +89,9 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
     }
 
 
-    mono_outR.RMS = cv::calibrateCamera(objpoints, imgpointsR, cv::Size(grayL.rows,grayL.cols),
+    mono_outR.RMS = cv::calibrateCamera(objpoints, imgpointsR, cv::Size(grayL.cols,grayL.rows),
                                 mono_outR.cameraMatrix, mono_outR.distCoeffs, mono_outR.rvecs, mono_outR.tvecs,
                                 mono_outR.stdDevIntrinsics, mono_outR.stdDevExtrinsics, mono_outR.perViewErrors, 0, criteria);
-
-    //mono_outR.cameraMatrix = cv::getOptimalNewCameraMatrix(mono_outR.cameraMatrix, mono_outR.distCoeffs, cv::Size(grayL.rows, grayL.cols),
-    //                              1, grayL.size(),0);
 
 
     std::string filenameR = "../../Calibration_parameters(mono)/A" + dataset_name + "_right_" +"camera_parameters.yml";
@@ -119,9 +113,8 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
         std::cerr << "Ошибка при открытии файла " << filenameR << " для записи." << std::endl;
     }
 
-
     st_out.RMS = cv::stereoCalibrate(objpoints, imgpointsL, imgpointsR, mono_outL.cameraMatrix, st_out.distCoeffs1,
-                        mono_outR.cameraMatrix, st_out.distCoeffs2, cv::Size(grayL.rows,grayL.cols), st_out.R, st_out.T,
+                        mono_outR.cameraMatrix, st_out.distCoeffs2, cv::Size(grayL.cols,grayL.rows), st_out.R, st_out.T,
                         st_out.E, st_out.F, st_out.rvecs, st_out.tvecs, st_out.perViewErrors,
                         cv::CALIB_FIX_INTRINSIC, criteria);
 
@@ -363,44 +356,7 @@ void print_stereo_camera_parameters(stereo_output_par_t stereo_struct){
     cout << "RMS: "                           << stereo_struct.RMS            << endl;
 }
 
-/*
-// Предзагрузка параметров калибровки камер
-cv::FileStorage fs;
-if (fs.open(name + "_left_camera_parameters.yml", cv::FileStorage::READ) && (!calibrate)){
-    if (fs.isOpened()){
-        fs["cameraMatrix"] >> mono_parL.cameraMatrix;
-        fs["distCoeffs"] >> mono_parL.distCoeffs;
-        fs["PerViewErrors"] >> mono_parL.perViewErrors;
-        fs["STDIntrinsics"] >> mono_parL.stdDevIntrinsics;
-        fs["STDExtrinsics"] >> mono_parL.stdDevExtrinsics;
-        fs["RotationVector"] >> mono_parL.rvecs;
-        fs["TranslationVector"] >> mono_parL.tvecs;
-        fs["RMS"] >> mono_parL.RMS;
-        fs.release();
-      }
-  } else {
-    cout << "Left calibration procedure is running..." << endl;
-    calibrate_camera(imagesL, pathL, name+ "_left", checkerboard_c,checkerboard_r, mono_parL);
-}
 
-if (fs.open(name + "_right_camera_parameters.yml", cv::FileStorage::READ) && (!calibrate)){
-    if (fs.isOpened()){
-      fs["cameraMatrix"] >> mono_parR.cameraMatrix;
-      fs["distCoeffs"] >> mono_parR.distCoeffs;
-      fs["PerViewErrors"] >> mono_parR.perViewErrors;
-      fs["STDIntrinsics"] >> mono_parR.stdDevIntrinsics;
-      fs["STDExtrinsics"] >> mono_parR.stdDevExtrinsics;
-      fs["RotationVector"] >> mono_parR.rvecs;
-      fs["TranslationVector"] >> mono_parR.tvecs;
-      fs["RMS"] >> mono_parR.RMS;
-      fs.release();
-    }
-} else {
-    cout << "Right calibration procedure is running..." << endl;
-    calibrate_camera(imagesR, pathR, name + "_right", checkerboard_c,checkerboard_r, mono_parR);
+void reprojectionError(cv::Mat objectPoints, cv::Mat R1, cv::Mat R2, cv::Mat cameraM1){
+    // @todo
 }
-
-// Show cameras parameters
-print_mono_camera_parameters("Left_camera", mono_parL);
-print_mono_camera_parameters("Right_camera", mono_parR);
-*/
