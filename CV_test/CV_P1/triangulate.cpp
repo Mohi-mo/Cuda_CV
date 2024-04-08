@@ -1,5 +1,7 @@
 #include "triangulate.h"
 
+
+/// Рассчёт карты диспарантности с использованием алгоритма SGBM
 void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight,
                       cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
                       cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity,
@@ -40,6 +42,7 @@ void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight,
     }
 }
 
+/// Рассчёт карты диспарантности с использованием алгоритма BM
 void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight,
                       cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
                       cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity,
@@ -80,8 +83,7 @@ void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight,
 }
 
 
-
-// Рассчёт карты диспарантности на CUDA
+/// Рассчёт карты диспарантности с использованием CUDA SGM
 void cuda_stereo_depth_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,
                            cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
                            cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity,
@@ -119,9 +121,7 @@ void cuda_stereo_depth_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,
     }
 }
 
-
-
-// Рассчёт карты диспарантности на CUDA Stereo belief propagation
+/// Рассчёт карты диспарантности с использованием CUDA Stereo Belief Propagation
 void cuda_stereo_depth_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,
                            cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
                            cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity,
@@ -159,4 +159,3 @@ void cuda_stereo_depth_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,
         //if (cv::waitKey(1) == 27) break;
     //}
 }
-

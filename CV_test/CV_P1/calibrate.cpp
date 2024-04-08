@@ -1,17 +1,19 @@
 #include "calibrate.h"
 
 
+/// Функция общей калибровки
 void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String> imagesR,
                          std::string pathL,std::string pathR, std::string dataset_name,
                          int checkerboard_c, int checkerboard_r,
                          mono_output_par_t &mono_outL,mono_output_par_t &mono_outR, stereo_output_par_t &st_out)
 {
+    // Объявление вектора ключевых точек
     std::vector<std::vector<cv::Point3f> > objpoints;
 
-    // Creating vector to store vectors of 2D points for each checkerboard image
+    // Объявление вектора для хранения координат 2д точек для каждого изображения шахматной доски
     std::vector<std::vector<cv::Point2f> > imgpointsL, imgpointsR;
 
-    // Defining the world coordinates for 3D points
+    // Определение координат мировых 3д точек
     std::vector<cv::Point3f> objp;
     for(int i{0}; i<checkerboard_r; i++)
     {
@@ -19,6 +21,7 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
             objp.push_back(cv::Point3f(j,i,0));
     }
 
+    // Загрузка путей изображений
     cv::glob(pathL, imagesL);
     cv::glob(pathR, imagesR);
 
@@ -26,6 +29,7 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
     std::vector<cv::Point2f> corner_ptsL, corner_ptsR;
 
     bool successL, successR;
+
 
     for(int i{0}; i<imagesL.size(); i++)
     {
@@ -35,8 +39,8 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
         frameR = cv::imread(imagesR[i]);
         cv::cvtColor(frameR,grayR,cv::COLOR_BGR2GRAY);
 
-        // Finding checker board corners
-        // If desired number of corners are found in the image then success = true
+        // Нахождение углов шахматной доски
+        // Если на изображении найдено нужное число углов success = true
         successL = cv::findChessboardCorners(grayL, cv::Size(checkerboard_c, checkerboard_r),
                                              corner_ptsL, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE );
         successR = cv::findChessboardCorners(grayR, cv::Size(checkerboard_c, checkerboard_r),
@@ -46,11 +50,11 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
       {
         cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.001);
 
-        // refining pixel coordinates for given 2d points.
+        // Уточнение координат пикселей для заданных двумерных точек
         cv::cornerSubPix(grayL,corner_ptsL,cv::Size(11,11), cv::Size(-1,-1),criteria);
         cv::cornerSubPix(grayR,corner_ptsR,cv::Size(11,11), cv::Size(-1,-1),criteria);
 
-        // Displaying the detected corner points on the checker board
+        // Отображение обнаруженных угловых точек на шахматной доске
         cv::drawChessboardCorners(frameL, cv::Size(checkerboard_c, checkerboard_r), corner_ptsL, successL);
         cv::drawChessboardCorners(frameR, cv::Size(checkerboard_c, checkerboard_r), corner_ptsR, successL);
 
@@ -58,17 +62,19 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
         imgpointsL.push_back(corner_ptsL);
         imgpointsR.push_back(corner_ptsR);
       }
+      // Отображение последних кадров с отмеченными точками
       cv::imshow("Left calib image", frameL);
       cv::imshow("Right calib image", frameR);
     }
 
-    //cv::destroyAllWindows();
     cv::TermCriteria criteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON);
 
+    // Калибровка левой камеры
     mono_outL.RMS = cv::calibrateCamera(objpoints, imgpointsL, cv::Size(grayL.cols,grayL.rows),
                                 mono_outL.cameraMatrix, mono_outL.distCoeffs, mono_outL.rvecs, mono_outL.tvecs,
                                 mono_outL.stdDevIntrinsics, mono_outL.stdDevExtrinsics, mono_outL.perViewErrors, 0, criteria);
 
+    // Запись параметров калибровки в файл
     std::string filenameL = "../../Calibration_parameters(mono)/A" + dataset_name + "_left_" +"camera_parameters.yml";
     cv::FileStorage fs;
 
@@ -89,11 +95,12 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
     }
 
 
+    // Калибровка правой камеры
     mono_outR.RMS = cv::calibrateCamera(objpoints, imgpointsR, cv::Size(grayL.cols,grayL.rows),
                                 mono_outR.cameraMatrix, mono_outR.distCoeffs, mono_outR.rvecs, mono_outR.tvecs,
                                 mono_outR.stdDevIntrinsics, mono_outR.stdDevExtrinsics, mono_outR.perViewErrors, 0, criteria);
 
-
+    // Запись параметров калибровки в файл
     std::string filenameR = "../../Calibration_parameters(mono)/A" + dataset_name + "_right_" +"camera_parameters.yml";
     cv::FileStorage fs_0;
 
@@ -113,17 +120,18 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
         std::cerr << "Ошибка при открытии файла " << filenameR << " для записи." << std::endl;
     }
 
+    // Калибровка двух камер
     st_out.RMS = cv::stereoCalibrate(objpoints, imgpointsL, imgpointsR, mono_outL.cameraMatrix, st_out.distCoeffs1,
                         mono_outR.cameraMatrix, st_out.distCoeffs2, cv::Size(grayL.cols,grayL.rows), st_out.R, st_out.T,
                         st_out.E, st_out.F, st_out.rvecs, st_out.tvecs, st_out.perViewErrors,
                         cv::CALIB_FIX_INTRINSIC, criteria);
 
-    // Writing updates
     st_out.cameraM1 = mono_outL.cameraMatrix;
     st_out.distCoeffs1 = mono_outL.distCoeffs;
     st_out.cameraM2 = mono_outR.cameraMatrix;
     st_out.distCoeffs2 = mono_outR.distCoeffs;
 
+    // Запись параметров стереокалибровки в файл
     std::string filename = "../../Calibration_parameters(stereo)/A" + dataset_name +"_stereo_camera_parameters.yml";
     cv::FileStorage stereo_fs;
 
@@ -148,7 +156,7 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
     }
 }
 
-
+/// Функция калибровки одной камеры
 void calibrate_camera(std::vector<cv::String> images, std::string path, std::string dataset_name,
                       int checkerboard_c, int checkerboard_r, mono_output_par_t &mono_out){
 
@@ -234,6 +242,7 @@ void calibrate_camera(std::vector<cv::String> images, std::string path, std::str
     }
 }
 
+/// Функция калибровки стереокамеры
 void calibrate_stereo(cv::Mat newCameraML, cv::Mat newCameraMR,
                       std::vector<cv::String> im1, std::vector<cv::String> im2,
                       std::string path1, std::string path2,
@@ -326,7 +335,7 @@ void calibrate_stereo(cv::Mat newCameraML, cv::Mat newCameraMR,
     }
 }
 
-// Отображение параметров камеры
+// Функция отображения параметров камеры
 void print_mono_camera_parameters(std::string name, mono_output_par_t mono_struct){
     cout << "\n\n\t" << name << "---------------------------------" << endl;
     cout << "cameraMatrix: "        << mono_struct.cameraMatrix     << endl;
@@ -339,7 +348,7 @@ void print_mono_camera_parameters(std::string name, mono_output_par_t mono_struc
     cout << "RMS: "                 << mono_struct.RMS              << endl;
 }
 
-// Отображение параметров стерео камеры
+// Функция отображения параметров стерео камеры
 void print_stereo_camera_parameters(stereo_output_par_t stereo_struct){
     cout << "\n\n\t\t Both cameras" << "------------------------------------" << endl;
     cout << "cameraMatrix L: "                << stereo_struct.cameraM1       << endl;
@@ -354,9 +363,4 @@ void print_stereo_camera_parameters(stereo_output_par_t stereo_struct){
     //cout << "Vector of translation vectors: " << stereo_struct.tvecs          << endl;
     //cout << "Per view errors: "               << stereo_struct.perViewErrors  << endl;
     cout << "RMS: "                           << stereo_struct.RMS            << endl;
-}
-
-
-void reprojectionError(cv::Mat objectPoints, cv::Mat R1, cv::Mat R2, cv::Mat cameraM1){
-    // @todo
 }
