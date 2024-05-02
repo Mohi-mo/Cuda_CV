@@ -65,6 +65,7 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
       // Отображение последних кадров с отмеченными точками
       cv::imshow("Left calib image", frameL);
       cv::imshow("Right calib image", frameR);
+      cv::waitKey(0);
     }
 
     cv::TermCriteria criteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON);
