@@ -4,7 +4,9 @@
 /// Создание объектов для алгоритмов рассчёта карты диспарантности
 cv::Ptr<cv::StereoSGBM> stereo = cv::StereoSGBM::create();
 //cv::Ptr<cv::StereoBM> stereo = cv::StereoBM::create();
+
 stereo_match_t SGBM_par;
+
 /// Создание объектов для алгоритмов рассчёта карты диспарантности с использованием CUDA
 //cv::Ptr<cv::cuda::StereoSGM> stereo = cv::cuda::createStereoSGM();
 //cv::Ptr<cv::cuda::StereoBeliefPropagation> stereo = cv::cuda::createStereoBeliefPropagation();
@@ -40,7 +42,7 @@ void on_trackbar7( int, void* )
 
 void on_trackbar8( int, void* )
 {
-  stereo->setMinDisparity(SGBM_par.minDisparity);
+  stereo->setMinDisparity(SGBM_par.minDisparity-20);
 }
 
 void on_trackbar3( int, void* )
@@ -61,6 +63,10 @@ void on_trackbar10(int, void*){
     stereo->setP2(SGBM_par.P2_);
 }
 
+void on_trackbar11(int, void*){
+    stereo->setMode(0);
+}
+
 /*
 static void on_trackbar9( int, void* )
 {
@@ -74,35 +80,20 @@ static void on_trackbar10( int, void* )
 }
 */
 
+
 /// Рассчёт карты диспарантности с использованием алгоритма SGBM
 void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight,
                       cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
                       cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity/*,
                       cv::Ptr<cv::StereoSGBM> stereo*/){
 
-    double local_max, local_min;
     cv::Mat depthMap, coloredDepthMap, disparityMap;
-
-    double fx_pix = cameraMatrixLeft.at<double>(0, 0);
-    double fy_pix = cameraMatrixLeft.at<double>(1, 1);
-
-    double fx_pixR = cameraMatrixRight.at<double>(0, 0);
-    double fy_pixR = cameraMatrixRight.at<double>(1, 1);
-
-    float focalLengthL = (fx_pix+fy_pix)/2;
-    float focalLengthR = (fx_pixR+fy_pixR)/2;
-    float focalLength = (focalLengthL + focalLengthR)/2;
-
-    double baseline = std::abs(T.at<double>(0));
-
-    std::cout << "Baseline length: " << baseline << std::endl;
-    std::cout << "Focal length: " << focalLength << std::endl;
 
     while (true){
         stereo->compute(rectifiedImageLeft, rectifiedImageRight, disparityMap);
 
         disparityMap.convertTo(disparity,CV_32F,1.0f);
-        disparity = (disparity/16.0f - (float)minDisparity)/((float)numDisparities);
+        disparity = (disparity/16.0f - (double)minDisparity)/((double)numDisparities);
 
         cv::imshow("Disparity Map", disparity);
 
@@ -111,7 +102,7 @@ void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight,
         cv::applyColorMap(depthMap, coloredDepthMap, cv::COLORMAP_JET);
         cv::imshow("Depth Map", coloredDepthMap);
 
-        if (cv::waitKey(1) == 27) break;
+        if (cv::waitKey(0) == 27) break;
     }
 }
 

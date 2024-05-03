@@ -30,7 +30,6 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
 
     bool successL, successR;
 
-
     for(int i{0}; i<imagesL.size(); i++)
     {
         frameL = cv::imread(imagesL[i]);
@@ -61,11 +60,16 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
         objpoints.push_back(objp);
         imgpointsL.push_back(corner_ptsL);
         imgpointsR.push_back(corner_ptsR);
+
+        std::cout << "Pair [" << i <<  "] complete" << std::endl;
+
+      } else {
+          std::cout << "Pair [" << i << "] ignored as no chessboard was found" << std::endl;
       }
       // Отображение последних кадров с отмеченными точками
-      cv::imshow("Left calib image", frameL);
-      cv::imshow("Right calib image", frameR);
-      cv::waitKey(0);
+      //cv::imshow("Left calib image", frameL);
+      //cv::imshow("Right calib image", frameR);
+      //cv::waitKey(0);
     }
 
     cv::TermCriteria criteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON);
@@ -125,7 +129,7 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
     st_out.RMS = cv::stereoCalibrate(objpoints, imgpointsL, imgpointsR, mono_outL.cameraMatrix, st_out.distCoeffs1,
                         mono_outR.cameraMatrix, st_out.distCoeffs2, cv::Size(grayL.cols,grayL.rows), st_out.R, st_out.T,
                         st_out.E, st_out.F, st_out.rvecs, st_out.tvecs, st_out.perViewErrors,
-                        cv::CALIB_FIX_INTRINSIC, criteria);
+                        0|cv::CALIB_FIX_INTRINSIC, criteria);
 
     st_out.cameraM1 = mono_outL.cameraMatrix;
     st_out.distCoeffs1 = mono_outL.distCoeffs;

@@ -22,24 +22,24 @@
 
 /// Структура, содержащая параметры объектов StereoSGBM / BM
 typedef struct StereoAlgorithmParams{
-    int minDisparity = 0;  // 40
-    int numDisparities = 27; // 16 or 1 for CUDA   27 - for not CUDA
-    int blockSize = 3; // 0
-    int P1_ = 10;
-    int P2_ = 1;
-    int disp12MaxDiff = 25;
-    int preFilterCap = 40;
-    int uniquenessRatio = 1;
+    int minDisparity = 1;  // 40
+    int numDisparities = 25; // 16 or 1 for CUDA   27 - for not CUDA
+    int blockSize = 5; // 0
+    int P1_ = 0;
+    int P2_ = 0;
+    int disp12MaxDiff = 1;
+    int preFilterCap = 0;
+    int uniquenessRatio = 10;
     int speckleWindowSize = 0;
     int speckleRange = 0;
     int mode = cv::StereoSGBM::MODE_SGBM; //  MODE_SGBM
-    //int mode = cv::cuda::StereoSGM::MODE_SGBM;
 }stereo_match_t;
 
 typedef struct CudaSGM_params {
     int numDisparity = 2.5;
     int numLevels = 14;
     int numIters = 6;
+    int mode = cv::cuda::StereoSGM::MODE_SGBM;
 }cuda_sgm_t;
 
 extern stereo_match_t SGBM_par;
