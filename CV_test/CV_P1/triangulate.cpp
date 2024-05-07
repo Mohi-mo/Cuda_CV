@@ -1,119 +1,42 @@
 #include "triangulate.h"
 
 
-/// Создание объектов для алгоритмов рассчёта карты диспарантности
-cv::Ptr<cv::StereoSGBM> stereo = cv::StereoSGBM::create();
-//cv::Ptr<cv::StereoBM> stereo = cv::StereoBM::create();
-
-stereo_match_t SGBM_par;
-
-/// Создание объектов для алгоритмов рассчёта карты диспарантности с использованием CUDA
-//cv::Ptr<cv::cuda::StereoSGM> stereo = cv::cuda::createStereoSGM();
-//cv::Ptr<cv::cuda::StereoBeliefPropagation> stereo = cv::cuda::createStereoBeliefPropagation();
-
-/// Определение функций, задающих параметры алгоритмов рассчёта карты диспарантности
-void on_trackbar1( int, void* )
-{
-    stereo->setNumDisparities(SGBM_par.numDisparities*16);
-    SGBM_par.numDisparities = SGBM_par.numDisparities*16;
-}
-
-void on_trackbar2( int, void* )
-{
-  stereo->setBlockSize(SGBM_par.blockSize*2+5);
-  SGBM_par.blockSize = SGBM_par.blockSize*2+5;
-}
-
-void on_trackbar5( int, void* )
-{
-  stereo->setSpeckleRange(SGBM_par.speckleRange);
-}
-
-void on_trackbar6( int, void* )
-{
-  stereo->setSpeckleWindowSize(SGBM_par.speckleWindowSize*2);
-  SGBM_par.speckleWindowSize = SGBM_par.speckleWindowSize*2;
-}
-
-void on_trackbar7( int, void* )
-{
-  stereo->setDisp12MaxDiff(SGBM_par.disp12MaxDiff);
-}
-
-void on_trackbar8( int, void* )
-{
-  stereo->setMinDisparity(SGBM_par.minDisparity-20);
-}
-
-void on_trackbar3( int, void* )
-{
-  stereo->setPreFilterCap(SGBM_par.preFilterCap);
-}
-
-void on_trackbar4( int, void* )
-{
-  stereo->setUniquenessRatio(SGBM_par.uniquenessRatio);
-}
-
-void on_trackbar9(int, void*){
-    stereo->setP1(SGBM_par.P1_);
-}
-
-void on_trackbar10(int, void*){
-    stereo->setP2(SGBM_par.P2_);
-}
-
-void on_trackbar11(int, void*){
-    stereo->setMode(0);
-}
-
-/*
-static void on_trackbar9( int, void* )
-{
-  stereo->setPreFilterType(preFilterType);
-}
-
-static void on_trackbar10( int, void* )
-{
-  stereo->setPreFilterSize(preFilterSize*2+5);
-  preFilterSize = preFilterSize*2+5;
-}
-*/
-
-
 /// Рассчёт карты диспарантности с использованием алгоритма SGBM
-void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight,
-                      cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
-                      cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity/*,
-                      cv::Ptr<cv::StereoSGBM> stereo*/){
+void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity,
+                      cv::Ptr<cv::StereoSGBM> &stereo){
 
-    cv::Mat depthMap, coloredDepthMap, disparityMap;
+    cv::Mat coloredDispMap, disparityMap;
 
-    while (true){
-        stereo->compute(rectifiedImageLeft, rectifiedImageRight, disparityMap);
+    //while (true){
+    stereo->compute(rectifiedImageLeft, rectifiedImageRight, disparityMap);
 
-        disparityMap.convertTo(disparity,CV_32F,1.0f);
-        disparity = (disparity/16.0f - (double)minDisparity)/((double)numDisparities);
+    disparityMap.convertTo(disparity,CV_32F,1.0f);
+    disparity = (disparity/32.0f - (double)stereo->getMinDisparity())/((double)stereo->getNumDisparities());
 
-        cv::imshow("Disparity Map", disparity);
+    cv::imshow("Disparity Map", disparity);
 
-        cv::normalize(disparity, depthMap, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+    cv::normalize(disparity, disparity, 0, 255, cv::NORM_MINMAX, CV_8UC1);
 
-        cv::applyColorMap(depthMap, coloredDepthMap, cv::COLORMAP_JET);
-        cv::imshow("Depth Map", coloredDepthMap);
+    cv::applyColorMap(disparity, coloredDispMap, cv::COLORMAP_JET);
+    cv::imshow("Colored disparity Map", coloredDispMap);
 
-        if (cv::waitKey(0) == 27) break;
-    }
+    disparity = coloredDispMap;
+        //if (cv::waitKey(0) != 27){
+
+        //}
+    //}
 }
 
 
 /// Рассчёт карты диспарантности с использованием CUDA SGM
 void cuda_stereo_depth_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,
                            cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
-                           cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity/*,
-                           cv::Ptr<cv::cuda::StereoSGM> stereo*/){
+                           cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity,
+                           cv::Ptr<cv::cuda::StereoSGM> &stereo){
+
 
     cv::Mat depthMap, coloredDepthMap, disparityMap;
+
     // Подготовка данных на GPU
     cv::cuda::GpuMat gpuImageLeft, gpuImageRight;
     gpuImageLeft.upload(rectifiedImLeft);

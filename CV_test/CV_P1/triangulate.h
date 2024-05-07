@@ -23,15 +23,15 @@
 /// Структура, содержащая параметры объектов StereoSGBM / BM
 typedef struct StereoAlgorithmParams{
     int minDisparity = 1;  // 40
-    int numDisparities = 25; // 16 or 1 for CUDA   27 - for not CUDA
-    int blockSize = 5; // 0
+    int numDisparities = 20; // 16 or 1 for CUDA   27 - for not CUDA
+    int blockSize = 2; // 0
     int P1_ = 0;
     int P2_ = 0;
     int disp12MaxDiff = 1;
     int preFilterCap = 0;
-    int uniquenessRatio = 10;
-    int speckleWindowSize = 0;
-    int speckleRange = 0;
+    int uniquenessRatio = 26;
+    int speckleWindowSize = 25;
+    int speckleRange = 2;
     int mode = cv::StereoSGBM::MODE_SGBM; //  MODE_SGBM
 }stereo_match_t;
 
@@ -42,20 +42,6 @@ typedef struct CudaSGM_params {
     int mode = cv::cuda::StereoSGM::MODE_SGBM;
 }cuda_sgm_t;
 
-extern stereo_match_t SGBM_par;
-
-
-void on_trackbar1( int, void* );
-void on_trackbar2( int, void* );
-void on_trackbar5( int, void* );
-void on_trackbar6( int, void* );
-
-void on_trackbar7( int, void* );
-void on_trackbar8( int, void* );
-void on_trackbar3( int, void* );
-void on_trackbar4( int, void* );
-void on_trackbar9(int, void*);
-void on_trackbar10(int, void*);
 
 /*!
  *  \brief Функция для вычисления карты диспарантности методом SGBM
@@ -71,9 +57,7 @@ void on_trackbar10(int, void*);
  *
  *  \param[out] disparity Матрица значенией диспарантности
 */
-void stereo_depth_map(cv::Mat rectifiedLeft, cv::Mat rectifiedRight,
-                      cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight, cv::Mat T,
-                      cv::Mat &disparity, int numDisparities, int minDisparity/*, cv::Ptr<cv::StereoSGBM> stereo*/);
+void stereo_depth_map(cv::Mat rectifiedLeft, cv::Mat rectifiedRight, cv::Mat &disparity, cv::Ptr<cv::StereoSGBM> &stereo);
 
 
 // CUDA -------------------------------------------------------------------------------------------------------

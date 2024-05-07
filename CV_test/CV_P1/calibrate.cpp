@@ -47,11 +47,11 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
 
       if(successL && successR)
       {
-        cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.001);
+        cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 10, 1e-6);
 
         // Уточнение координат пикселей для заданных двумерных точек
-        cv::cornerSubPix(grayL,corner_ptsL,cv::Size(11,11), cv::Size(-1,-1),criteria);
-        cv::cornerSubPix(grayR,corner_ptsR,cv::Size(11,11), cv::Size(-1,-1),criteria);
+        cv::cornerSubPix(grayL,corner_ptsL,cv::Size(3,3), cv::Size(-1,-1),criteria);
+        cv::cornerSubPix(grayR,corner_ptsR,cv::Size(3,3), cv::Size(-1,-1),criteria);
 
         // Отображение обнаруженных угловых точек на шахматной доске
         cv::drawChessboardCorners(frameL, cv::Size(checkerboard_c, checkerboard_r), corner_ptsL, successL);
@@ -64,20 +64,22 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
         std::cout << "Pair [" << i <<  "] complete" << std::endl;
 
       } else {
-          std::cout << "Pair [" << i << "] ignored as no chessboard was found" << std::endl;
+          std::cout << "Pair [" << i << "] ignored as no chessboard found" << std::endl;
+          continue;
       }
       // Отображение последних кадров с отмеченными точками
-      //cv::imshow("Left calib image", frameL);
-      //cv::imshow("Right calib image", frameR);
+      cv::imshow("Left calib image", frameL);
+      cv::imshow("Right calib image", frameR);
       //cv::waitKey(0);
     }
 
-    cv::TermCriteria criteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON);
+    cv::TermCriteria criteria(TermCriteria::COUNT+TermCriteria::EPS, 10, DBL_EPSILON);
+    int flags = 0;
 
     // Калибровка левой камеры
     mono_outL.RMS = cv::calibrateCamera(objpoints, imgpointsL, cv::Size(grayL.cols,grayL.rows),
                                 mono_outL.cameraMatrix, mono_outL.distCoeffs, mono_outL.rvecs, mono_outL.tvecs,
-                                mono_outL.stdDevIntrinsics, mono_outL.stdDevExtrinsics, mono_outL.perViewErrors, 0, criteria);
+                                mono_outL.stdDevIntrinsics, mono_outL.stdDevExtrinsics, mono_outL.perViewErrors, flags, criteria);
 
     // Запись параметров калибровки в файл
     std::string filenameL = "../../Calibration_parameters(mono)/A" + dataset_name + "_left_" +"camera_parameters.yml";
@@ -103,7 +105,7 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
     // Калибровка правой камеры
     mono_outR.RMS = cv::calibrateCamera(objpoints, imgpointsR, cv::Size(grayL.cols,grayL.rows),
                                 mono_outR.cameraMatrix, mono_outR.distCoeffs, mono_outR.rvecs, mono_outR.tvecs,
-                                mono_outR.stdDevIntrinsics, mono_outR.stdDevExtrinsics, mono_outR.perViewErrors, 0, criteria);
+                                mono_outR.stdDevIntrinsics, mono_outR.stdDevExtrinsics, mono_outR.perViewErrors, flags, criteria);
 
     // Запись параметров калибровки в файл
     std::string filenameR = "../../Calibration_parameters(mono)/A" + dataset_name + "_right_" +"camera_parameters.yml";
@@ -126,15 +128,11 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
     }
 
     // Калибровка двух камер
-    st_out.RMS = cv::stereoCalibrate(objpoints, imgpointsL, imgpointsR, mono_outL.cameraMatrix, st_out.distCoeffs1,
-                        mono_outR.cameraMatrix, st_out.distCoeffs2, cv::Size(grayL.cols,grayL.rows), st_out.R, st_out.T,
+    st_out.RMS = cv::stereoCalibrate(objpoints, imgpointsL, imgpointsR, st_out.cameraM1, st_out.distCoeffs1,
+                        st_out.cameraM2, st_out.distCoeffs2, cv::Size(grayL.cols,grayL.rows), st_out.R, st_out.T,
                         st_out.E, st_out.F, st_out.rvecs, st_out.tvecs, st_out.perViewErrors,
-                        0|cv::CALIB_FIX_INTRINSIC, criteria);
+                        0, criteria);
 
-    st_out.cameraM1 = mono_outL.cameraMatrix;
-    st_out.distCoeffs1 = mono_outL.distCoeffs;
-    st_out.cameraM2 = mono_outR.cameraMatrix;
-    st_out.distCoeffs2 = mono_outR.distCoeffs;
 
     // Запись параметров стереокалибровки в файл
     std::string filename = "../../Calibration_parameters(stereo)/A" + dataset_name +"_stereo_camera_parameters.yml";
@@ -369,3 +367,5 @@ void print_stereo_camera_parameters(stereo_output_par_t stereo_struct){
     //cout << "Per view errors: "               << stereo_struct.perViewErrors  << endl;
     cout << "RMS: "                           << stereo_struct.RMS            << endl;
 }
+
+
