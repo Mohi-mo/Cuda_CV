@@ -7,6 +7,9 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
                          int checkerboard_c, int checkerboard_r,
                          mono_output_par_t &mono_outL,mono_output_par_t &mono_outR, stereo_output_par_t &st_out)
 {
+
+    float square_size = 20.1; // in mm
+
     // Объявление вектора ключевых точек
     std::vector<std::vector<cv::Point3f> > objpoints;
 
@@ -18,7 +21,7 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
     for(int i{0}; i<checkerboard_r; i++)
     {
         for(int j{0}; j<checkerboard_c; j++)
-            objp.push_back(cv::Point3f(j,i,0));
+            objp.push_back(cv::Point3f((float)j*square_size,(float)i*square_size,0.f));
     }
 
     // Загрузка путей изображений
@@ -41,17 +44,17 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
         // Нахождение углов шахматной доски
         // Если на изображении найдено нужное число углов success = true
         successL = cv::findChessboardCorners(grayL, cv::Size(checkerboard_c, checkerboard_r),
-                                             corner_ptsL, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE );
+                                             corner_ptsL, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_FILTER_QUADS/*CALIB_CB_NORMALIZE_IMAGE */);
         successR = cv::findChessboardCorners(grayR, cv::Size(checkerboard_c, checkerboard_r),
-                                             corner_ptsR, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE );
+                                             corner_ptsR, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_FILTER_QUADS);
 
       if(successL && successR)
       {
         cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 10, 1e-6);
 
         // Уточнение координат пикселей для заданных двумерных точек
-        cv::cornerSubPix(grayL,corner_ptsL,cv::Size(3,3), cv::Size(-1,-1),criteria);
-        cv::cornerSubPix(grayR,corner_ptsR,cv::Size(3,3), cv::Size(-1,-1),criteria);
+        cv::cornerSubPix(grayL,corner_ptsL,cv::Size(11,11), cv::Size(-1,-1),criteria);
+        cv::cornerSubPix(grayR,corner_ptsR,cv::Size(11,11), cv::Size(-1,-1),criteria);
 
         // Отображение обнаруженных угловых точек на шахматной доске
         cv::drawChessboardCorners(frameL, cv::Size(checkerboard_c, checkerboard_r), corner_ptsL, successL);

@@ -21,18 +21,18 @@ using namespace cuda;
 /// Объявление переменных (временно)
 /// \todo Убрать глобальные переменные, сделать их передачу как параметров
 cv::Mat rectifiedLeft, rectifiedRight;
-cv::Mat point3D;
-cv::Mat image3D;
-cv::Mat disparity;;
+cv::Mat disparity;
 
 /// Объявление структур для хранения параметров калибровки
 stereo_output_par_t stereo_par;
+
 struct MouseCallbackData {
     //std::vector<KeyPoint> keypointsLeft;
-    std::vector<Point2f> leftKey;
+    vector<vector<int>> leftKey;
     std::vector<Point2f> rightKey;
     cv::Mat disparity;
     cv::Mat depth;
+    vector<vector<double>> points3D;
     double focalLenght;
     double baseline;
 };
@@ -45,8 +45,8 @@ float min_x =  10000.0;
 float max_x = -10000.0;
 
 /// Создание объектов для алгоритмов рассчёта карты диспарантности
-//cv::Ptr<cv::StereoBM> stereo = cv::StereoBM::create();
-cv::Ptr<cv::StereoSGBM> stereo = cv::StereoSGBM::create();
+cv::Ptr<cv::StereoBM> stereo = cv::StereoBM::create();
+//cv::Ptr<cv::StereoSGBM> stereo = cv::StereoSGBM::create();
 
 /// Создание объектов для алгоритмов рассчёта карты диспарантности с использованием CUDA
 //cv::Ptr<cv::cuda::StereoSGM> stereo = cv::cuda::createStereoSGM();
@@ -85,9 +85,8 @@ void on_trackbar(int, void*){
 /// Функция обратного вызова по клику мышкой
 void onMouseClick(int event, int x, int y, int flags, void* userdata) {
     MouseCallbackData* data = static_cast<MouseCallbackData*>(userdata);
-    std::vector<cv::Point2f>& cordsL = data->leftKey;
-    std::vector<cv::Point2f>& cordsR = data->rightKey;
-    cv::Mat& disparity = data->disparity;
+    vector<vector<int>>& cordsL = data->leftKey;
+    vector<vector<double>>& d3 = data->points3D;
 
     if (event == cv::EVENT_LBUTTONDOWN) {
         cv::Point2f clickPoint(x, y);
@@ -95,9 +94,9 @@ void onMouseClick(int event, int x, int y, int flags, void* userdata) {
         int closestIdx = -1;
         double distance = 0;
 
-        for (size_t i = 0; i < 500; i++) {
-            double dx = clickPoint.x - cordsL[i].x;
-            double dy = clickPoint.y - cordsL[i].y;
+        for (size_t i = 0; i < cordsL.size(); i++) {
+            double dx = clickPoint.x - cordsL[i][1];
+            double dy = clickPoint.y - cordsL[i][0];
             distance = std::sqrt(dx * dx + dy * dy);
             if (distance < minDistance) {
                 minDistance = distance;
@@ -106,12 +105,9 @@ void onMouseClick(int event, int x, int y, int flags, void* userdata) {
         }
         //std::cout << "Min distance: " << minDistance << " distance: " << distance << std::endl;
         if (closestIdx != -1) {
-            //double disparityValue = disparity.at<double>(cordsL[closestIdx]);
-            //double depth = (data->baseline * data->focalLenght) / (disparityValue + 0.0001);
-
-            cv::circle(rectifiedLeft, (cordsL[closestIdx], cordsL[closestIdx]), 3, cv::Scalar(0, 0, 0), -1);
-            std::cout << "X: " << cordsL[closestIdx].x << " Y: " << cordsL[closestIdx].y << " Z: " << data->disparity.at<double>(cordsL[closestIdx]) << std::endl;
-
+            std::cout << closestIdx << ") X: " << cordsL[closestIdx][1] << " Y: " << cordsL[closestIdx][0] << " Z: " << d3[closestIdx][2]<< std::endl;
+            cv::circle(rectifiedLeft, cv::Point(cordsL[closestIdx][1], cordsL[closestIdx][0]), 2, cv::Scalar(255, 255, 255), -1);
+            cv::putText(rectifiedLeft, std::to_string(closestIdx), cv::Point(cordsL[closestIdx][1], cordsL[closestIdx][0]), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 0, 0), 1);
             cv::imshow("3D points on image", rectifiedLeft);
         }
     }
@@ -123,7 +119,6 @@ int main(int argc, char** argv) {
     mono_output_par_t mono_parR;
 
     MouseCallbackData callbackData;
-    //callbackData.disparity;
 
     std::vector<cv::String> imagesL, imagesR;   // Переменные, содержащие названия изображений в датасетах
     std::string pathL, pathR;                   // Переменные, содержащие пути к датасетам
@@ -271,24 +266,6 @@ int main(int argc, char** argv) {
     cv::stereoRectify(stereo_par.cameraM1, stereo_par.distCoeffs1, stereo_par.cameraM2, stereo_par.distCoeffs2,
                       cv::Size(grayImageLeft.cols, grayImageLeft.rows), stereo_par.R, stereo_par.T, R1, R2, P1, P2, Q, cv::CALIB_ZERO_DISPARITY);
 
-    double fx_pixL = stereo_par.cameraM1.at<double>(0, 0);
-    double fy_pixL = stereo_par.cameraM1.at<double>(1, 1);
-
-    //double fx_pixR = stereo_par.cameraM2.at<double>(0, 0);
-    //double fy_pixR = stereo_par.cameraM2.at<double>(1, 1);
-
-    float focalLengthL = sqrt(fx_pixL*fx_pixL+fy_pixL*fy_pixL);
-    float focalLength = focalLengthL;
-
-    double baseline = std::abs(stereo_par.T.at<double>(0));
-
-    callbackData.baseline = baseline;
-    callbackData.focalLenght = focalLength;
-
-    std::cout << std::endl;
-    std::cout << "Baseline length: " << baseline << std::endl;
-    std::cout << "Focal length: " << focalLength << std::endl;
-
     // Нахождение параметров ректификации и устранения искажений для левого изображения
     cv::initUndistortRectifyMap(stereo_par.cameraM1, stereo_par.distCoeffs1, R1, P1,
                                 cv::Size(imageLeft.cols, imageLeft.rows), CV_32FC1, mapLx, mapLy);
@@ -315,7 +292,7 @@ int main(int argc, char** argv) {
     // Создание функций обратной связи для обновления параметров
     cv::createTrackbar("numDisparities", "disparity", &SGBM_par.numDisparities, 64, on_trackbar);
     cv::createTrackbar("blockSize", "disparity", &SGBM_par.blockSize, 15, on_trackbar);
-    cv::createTrackbar("preFilterCap", "disparity", &SGBM_par.preFilterCap, 1, on_trackbar);
+    cv::createTrackbar("preFilterCap", "disparity", &SGBM_par.preFilterCap, 62, on_trackbar);
     cv::createTrackbar("uniquenessRatio", "disparity", &SGBM_par.uniquenessRatio, 50, on_trackbar);
     cv::createTrackbar("speckleRange", "disparity", &SGBM_par.speckleRange, 100, on_trackbar);
     cv::createTrackbar("speckleWindowSize", "disparity", &SGBM_par.speckleWindowSize, 25, on_trackbar);
@@ -325,70 +302,71 @@ int main(int argc, char** argv) {
     cv::createTrackbar("P2", "disparity", &SGBM_par.P2_, 10, on_trackbar);
     cv::waitKey(0);
 
-    cv::Mat maxInColumns = cv::Mat::zeros(disparity.cols, 1, CV_8UC1);
-    int matMax = INT_MIN;
-    int matMin = INT_MAX;
-    for (int i = 0; i < disparity.cols; i++)
-    {
-        int max = INT_MIN;
-        int min = INT_MAX;
-        for (int j = 0; j < disparity.rows; j++)
-        {
-        int val = (int)(disparity.at<uchar>(j, i));
-            if (val > max)
-                max = val;
-            if (val < min)
-                min = val;
-        }
-
-        maxInColumns.at<uchar>(i, 0) = max;
-        if (max > matMax)
-            matMax = max;
-        if (min < matMin)
-            matMin = min;
-    }
-
-    int map_width = 320;
-    int map_height = 240;
-
-    cv::Mat points;
-    cv::reprojectImageTo3D(maxInColumns, points, Q);
-
-    callbackData.disparity = maxInColumns;
-    cv::Mat xy_projection = cv::Mat::zeros(map_height, map_width, CV_8UC1);
-
-    for(int i = 0; i< points.rows; i++){
-        float cur_y = -points.at<cv::Vec3f>(i, 0)[0];
-        float cur_x = points.at<cv::Vec3f>(i, 0)[1];
-
-        if (!isinf(cur_y)) {
-            min_y = std::min(cur_y, min_y);
-            max_y = std::max(cur_y, max_y);
-        }
-
-        if (!isinf(cur_x)){
-            max_x = std::max(cur_x, max_x);
-            min_x = std::min(cur_x, min_x);
-        }
-
-        int xx = (int)((cur_x)) + (int)(map_width/2); // zero point is in the middle of the map
-        int yy = map_height - (int)((cur_y-min_y));     // zero point is at the bottom of the map
-
-        // If the point fits on our 2D map - let's draw it!
-        if (xx < map_width && xx >= 0 && yy < map_height && yy >= 0){
-            xy_projection.at<uchar>(yy, xx) = maxInColumns.at<uchar>(i, 0); //maximized_line.at<uchar>(i, 0);
-        }
-    }
 
     // Нахождение 3д точек
-    //reprojectImageTo3D(disparity, point3D, Q, false, -1);
+    cv::Mat pointsAll;
+    cv::reprojectImageTo3D(disparity, pointsAll, Q, true, CV_32F);
 
+    callbackData.depth = Q;
+    callbackData.disparity = disparity;
+
+    vector<double> limit_outlierArea {-8.0e3, -8.0e3, 250, 8.0e3, 8.0e3, 15.20e3};
+
+    vector<vector<int>> vu;             // 2D координаты точки на изображении
+    vector<vector<double>> xyz;         // 3D координаты точки на пространсве
+    vector<vector<int>> rgb;            // цвет 3D точки
+
+    for(int v = 0; v < pointsAll.rows; v++)
+    {
+        for(int u = 0; u < pointsAll.cols; u++)
+        {
+
+            cv::Vec3f xyz3D = pointsAll.at<cv::Vec3f>(v, u);
+
+
+            if( xyz3D[0] < limit_outlierArea[0] ) continue;
+            if( xyz3D[1] < limit_outlierArea[1] ) continue;
+            if( xyz3D[2] < limit_outlierArea[2] ) continue;
+
+            if( xyz3D[0] > limit_outlierArea[3] ) continue;
+            if( xyz3D[1] > limit_outlierArea[4] ) continue;
+            if( xyz3D[2] > limit_outlierArea[5] ) continue;
+
+
+            vu.push_back({v, u});
+            xyz.push_back(vector<double> ({xyz3D[0], xyz3D[1], xyz3D[2]}));
+        }
+    }
+
+    callbackData.leftKey = vu;
+
+    for (int i = 0; i < vu.size(); i++){
+        int v = vu[i][0];
+        int u = vu[i][1];
+        cv::circle(rectifiedLeft, cv::Point(u, v), 3, cv::Scalar(20, 255, 0), -1);
+
+        double x = xyz[i][0];
+        double y = xyz[i][1];
+        double z = xyz[i][2];
+        callbackData.points3D.push_back(xyz[i]);
+
+        if (i < 5){
+            std::cout << std::endl;
+            std::cout << "2D coords: [" << u << ", " << v << "] in pix" << std::endl;
+            std::cout << "3D coords: [" << x << ", " << y << ", "<< z << "] in mm" << std::endl;
+        }
+    }
+
+
+    //std::cout << xyz.at<cv::Vec3f>(0,0) << std::endl;
+
+    /*
     vector<KeyPoint> keypointsLeft, keypointsRight;
     Mat descriptorsLeft, descriptorsRight;
 
     // Поиск ключевых точек на левом и правом изображениях
     Ptr<FeatureDetector> detector = ORB::create();
-    detector->detect(disparity, keypointsLeft);
+    detector->detect(rectifiedLeft, keypointsLeft);
     detector->detect(rectifiedRight, keypointsRight);
 
     // Сопоставление ключевых точек
@@ -418,26 +396,22 @@ int main(int argc, char** argv) {
     // Вывод результатов
     cv::imshow("Matched Points", matchedImage);
 
+
     std::vector<Point2f> x, y;
     for (size_t i = 0; i < matches.size(); i++){
         callbackData.leftKey.push_back(keypointsLeft[matches[i].queryIdx].pt);
         callbackData.rightKey.push_back(keypointsRight[matches[i].trainIdx].pt);
 
         callbackData.leftKey.push_back(keypointsLeft[matches[i].queryIdx].pt);
-        callbackData.rightKey.push_back(keypointsRight[matches[i].trainIdx].pt);
-
-        cv::circle(rectifiedLeft, (callbackData.leftKey[i]), 5, cv::Scalar(150, 150, 150), -1);
+        callbackData.rightKey.push_back(keypointsRight[matches[i].trainIdx].pt);    
     }
+    */
 
-    cv::Mat depth = (focalLength * baseline) / (disparity);
-    callbackData.depth = depth;
 
     // Вывод левого изображения и установка функции обратной связи для обработки кликов мыши
     cv::imshow("3D points on image", rectifiedLeft);
     cv::setMouseCallback("3D points on image", onMouseClick, &callbackData);
 
-    /*
-*/
     cv::waitKey(0);
     cv::destroyAllWindows();
 
