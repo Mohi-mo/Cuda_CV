@@ -23,7 +23,7 @@
 /// Структура, содержащая параметры объектов StereoSGBM / BM
 typedef struct StereoAlgorithmParams{
     int minDisparity = 1;  // 40
-    int numDisparities = 15; // 16 or 1 for CUDA   27 - for not CUDA
+    int numDisparities = 15;
     int blockSize = 2; // 0
     int P1_ = 0;
     int P2_ = 0;
@@ -36,7 +36,8 @@ typedef struct StereoAlgorithmParams{
 }stereo_match_t;
 
 typedef struct CudaSGM_params {
-    int numDisparity = 2;
+    int numDisparities =1; // Значение кратное 4-м от
+    int blockSize = 19;
     int numLevels = 14;
     int numIters = 6;
     int mode = cv::cuda::StereoSGM::MODE_SGBM;
@@ -57,15 +58,13 @@ typedef struct CudaSGM_params {
  *
  *  \param[out] disparity Матрица значенией диспарантности
 */
-void stereo_depth_map(cv::Mat rectifiedLeft, cv::Mat rectifiedRight, cv::Mat &disparity, cv::Ptr<cv::StereoSGBM> &stereo);
+void stereo_d_map(cv::Mat rectifiedLeft, cv::Mat rectifiedRight, cv::Mat &disparity, cv::Ptr<cv::StereoSGBM> &stereo);
 
-void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity, cv::Ptr<cv::StereoBM> &stereo);
+void stereo_d_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity, cv::Ptr<cv::StereoBM> &stereo);
 
 // CUDA -------------------------------------------------------------------------------------------------------
-void cuda_stereo_depth_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,
-                           cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
-                           cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity/*,
-                           cv::Ptr<cv::cuda::StereoSGM> stereo*/);
+void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoSGM> &stereo);
 
+void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoBeliefPropagation> &stereo);
 
 #endif // TRIANGULATE_H

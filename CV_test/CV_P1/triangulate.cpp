@@ -2,7 +2,7 @@
 
 
 /// Рассчёт карты диспарантности с использованием алгоритма SGBM
-void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity,
+void stereo_d_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity,
                       cv::Ptr<cv::StereoSGBM> &stereo){
 
     cv::Mat coloredDispMap, disparityMap;
@@ -27,7 +27,7 @@ void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, c
     //}
 }
 
-void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity,
+void stereo_d_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity,
                       cv::Ptr<cv::StereoBM> &stereo){
 
     cv::Mat coloredDispMap, disparityMap;
@@ -56,13 +56,10 @@ void stereo_depth_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, c
 
 
 /// Рассчёт карты диспарантности с использованием CUDA SGM
-void cuda_stereo_depth_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,
-                           cv::Mat cameraMatrixLeft, cv::Mat cameraMatrixRight,
-                           cv::Mat T, cv::Mat &disparity, int numDisparities, int minDisparity,
+void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,  cv::Mat &disparity,
                            cv::Ptr<cv::cuda::StereoSGM> &stereo){
 
-
-    cv::Mat depthMap, coloredDepthMap, disparityMap;
+    cv::Mat coloredDispMap, disparityMap;
 
     // Подготовка данных на GPU
     cv::cuda::GpuMat gpuImageLeft, gpuImageRight;
@@ -71,26 +68,63 @@ void cuda_stereo_depth_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,
 
     cv::cuda::GpuMat gpuDisparityMap;
 
-    while (true){
+    //while (true){
+    stereo->compute(gpuImageLeft, gpuImageRight, gpuDisparityMap);
+
+    // Скачивание результата с GPU
+    gpuDisparityMap.download(disparityMap);
+
+    //stereo->compute(rectifiedImLeft, rectifiedImRight, disparityMap);
+
+    disparityMap.convertTo(disparity,CV_32F,1.0f);
+    disparity = (disparity/32.0f - (double)stereo->getMinDisparity())/((double)stereo->getNumDisparities());
+
+    //cv::medianBlur(disparity, disparity, 5);
+
+    cv::imshow("Disparity Map", disparity);
+
+    cv::normalize(disparity, disparity, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+
+    cv::applyColorMap(disparity, coloredDispMap, cv::COLORMAP_JET);
+    cv::imshow("Colored disparity Map", coloredDispMap);
+    /*
+
+    //    if (cv::waitKey(1) == 27) break;
+    //}
+    */
+}
+
+
+void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity,
+                       cv::Ptr<cv::cuda::StereoBeliefPropagation> &stereo){
+
+    cv::Mat coloredDispMap, disparityMap;
+
+    // Подготовка данных на GPU
+    cv::cuda::GpuMat gpuImageLeft, gpuImageRight;
+    gpuImageLeft.upload(rectifiedImLeft);
+    gpuImageRight.upload(rectifiedImRight);
+
+    cv::cuda::GpuMat gpuDisparityMap;
+
+    //while (true){
         stereo->compute(gpuImageLeft, gpuImageRight, gpuDisparityMap);
 
         // Скачивание результата с GPU
         gpuDisparityMap.download(disparityMap);
 
-        disparityMap.convertTo(disparity,CV_32F, 1.0);
-        disparity = (disparity/16.0f - (float)minDisparity)/((float)numDisparities);
+        disparityMap.convertTo(disparity,CV_32F,1.0f);
+        disparity = (disparity/32.0f - (double)stereo->getMinDisparity())/((double)stereo->getNumDisparities());
 
-        // Визуализация карты диспарантности
+        //cv::medianBlur(disparity, disparity, 5);
+
         cv::imshow("Disparity Map", disparity);
 
-        cv::normalize(disparityMap, depthMap, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-        //depthMap = focalLength * baseline / (disparity);
-        //cv::normalize(depthMap, depthMap, local_min, local_max, cv::NORM_MINMAX);
-        //disparity.convertTo(depthMap, CV_8UC1, 255*(local_max-local_min));
+        cv::normalize(disparity, disparity, 0, 255, cv::NORM_MINMAX, CV_8UC1);
 
-        cv::applyColorMap(depthMap, coloredDepthMap, cv::COLORMAP_JET);
-        cv::imshow("Depth Map", coloredDepthMap);
+        cv::applyColorMap(disparity, coloredDispMap, cv::COLORMAP_JET);
+        cv::imshow("Colored disparity Map", coloredDispMap);
 
-        if (cv::waitKey(1) == 27) break;
-    }
+    //    if (cv::waitKey(1) == 27) break;
+    //}
 }

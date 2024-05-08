@@ -37,50 +37,89 @@ struct MouseCallbackData {
     double baseline;
 };
 
-stereo_match_t SGBM_par;
+
 
 float min_y = 10000.0;
 float max_y = -10000.0;
 float min_x =  10000.0;
 float max_x = -10000.0;
 
-/// Создание объектов для алгоритмов рассчёта карты диспарантности
-cv::Ptr<cv::StereoBM> stereo = cv::StereoBM::create();
-//cv::Ptr<cv::StereoSGBM> stereo = cv::StereoSGBM::create();
+#define NO_CUDA //NO_CUDA
 
-/// Создание объектов для алгоритмов рассчёта карты диспарантности с использованием CUDA
-//cv::Ptr<cv::cuda::StereoSGM> stereo = cv::cuda::createStereoSGM();
-//cv::Ptr<cv::cuda::StereoBeliefPropagation> stereo = cv::cuda::createStereoBeliefPropagation();
+#ifdef CUDA
+    cuda_sgm_t cuda_par;
 
-
-/// Определение функции, задающей параметры алгоритмов рассчёта карты диспарантности
-void on_trackbar(int, void*){
-    stereo->setNumDisparities(SGBM_par.numDisparities*16);
-    stereo->setBlockSize(SGBM_par.blockSize*2+5);
-    stereo->setMinDisparity(SGBM_par.minDisparity);
-    stereo->setPreFilterCap(SGBM_par.preFilterCap);
-    stereo->setUniquenessRatio(SGBM_par.uniquenessRatio);
-    stereo->setSpeckleWindowSize(SGBM_par.speckleWindowSize);
-    stereo->setSpeckleRange(SGBM_par.speckleRange);
-    stereo->setDisp12MaxDiff(SGBM_par.disp12MaxDiff);
+    /// Создание объектов для алгоритмов рассчёта карты диспарантности с использованием CUDA
+    //cv::Ptr<cv::cuda::StereoSGM> stereo = cv::cuda::createStereoSGM();
+    cv::Ptr<cv::cuda::StereoBeliefPropagation> stereo = cv::cuda::createStereoBeliefPropagation();
 
 
-    /// Вычисление карты диспарантности
-    stereo_depth_map(rectifiedLeft, rectifiedRight, disparity, stereo);
+    //int numDisparities = 2;
+    //int numLevels = 14;
+    //int numIters = 6;
+    //int mode = cv::cuda::StereoSGM::MODE_SGBM;
 
-    //stereo.estimateRecommendedParams(rectifiedLeft.cols, rectifiedLeft.rows, SGBM_par.numDisparities);
-    //int ndisp, iters, levels;
-    //cv::cuda::StereoBeliefPropagation::estimateRecommendedParams(rectifiedLeft.cols, rectifiedLeft.rows, ndisp, iters, levels);
+    /// Определение функции, задающей параметры алгоритмов рассчёта карты диспарантности
+    void on_trackbar(int, void*){
+        stereo->setNumDisparities(cuda_par.numDisparities*16);
+        stereo->setBlockSize(cuda_par.blockSize);
 
-    //std::cout << "Num disparities: "    << ndisp << "\n"
-    //            <<"Iters: "             << iters << "\n"
-    //            <<"Levels: "            << levels << std::endl;
+        /// Вычисление карты диспарантности
+        //stereo_d_map(rectifiedLeft, rectifiedRight, disparity, stereo);
 
-    /// Вычисление карты диспарантности с использованием CUDA
-    //cuda_stereo_depth_map(rectifiedLeft, rectifiedRight, P1, P2, stereo_par.T,
-    //                     disparity, SGBM_par.numDisparities, SGBM_par.minDisparity, stereo);
+        //stereo.estimateRecommendedParams(rectifiedLeft.cols, rectifiedLeft.rows, SGBM_par.numDisparities);
+        //int ndisp, iters, levels;
+        //cv::cuda::StereoBeliefPropagation::estimateRecommendedParams(rectifiedLeft.cols, rectifiedLeft.rows, ndisp, iters, levels);
 
-}
+        //std::cout << "Num disparities: "    << ndisp << "\n"
+        //            <<"Iters: "             << iters << "\n"
+        //            <<"Levels: "            << levels << std::endl;
+
+        /// Вычисление карты диспарантности с использованием CUDA
+        cuda_stereo_d_map(rectifiedLeft, rectifiedRight, disparity, stereo);
+
+    }
+#endif
+
+#ifdef NO_CUDA
+
+    /// Объявление структуры для хранения параметров BM / SGBM
+    stereo_match_t SGBM_par;
+
+    /// Создание объектов для алгоритмов рассчёта карты диспарантности
+    cv::Ptr<cv::StereoBM> stereo = cv::StereoBM::create();
+    //cv::Ptr<cv::StereoSGBM> stereo = cv::StereoSGBM::create();
+
+    /// Определение функции, задающей параметры алгоритмов рассчёта карты диспарантности
+    void on_trackbar(int, void*){
+        stereo->setNumDisparities(SGBM_par.numDisparities*16);
+        stereo->setBlockSize(SGBM_par.blockSize*2+5);
+        stereo->setMinDisparity(SGBM_par.minDisparity);
+        stereo->setPreFilterCap(SGBM_par.preFilterCap);
+        stereo->setUniquenessRatio(SGBM_par.uniquenessRatio);
+        stereo->setSpeckleWindowSize(SGBM_par.speckleWindowSize);
+        stereo->setSpeckleRange(SGBM_par.speckleRange);
+        stereo->setDisp12MaxDiff(SGBM_par.disp12MaxDiff);
+
+
+        /// Вычисление карты диспарантности
+        stereo_d_map(rectifiedLeft, rectifiedRight, disparity, stereo);
+
+        //stereo.estimateRecommendedParams(rectifiedLeft.cols, rectifiedLeft.rows, SGBM_par.numDisparities);
+        //int ndisp, iters, levels;
+        //cv::cuda::StereoBeliefPropagation::estimateRecommendedParams(rectifiedLeft.cols, rectifiedLeft.rows, ndisp, iters, levels);
+
+        //std::cout << "Num disparities: "    << ndisp << "\n"
+        //            <<"Iters: "             << iters << "\n"
+        //            <<"Levels: "            << levels << std::endl;
+
+        /// Вычисление карты диспарантности с использованием CUDA
+        //cuda_stereo_depth_map(rectifiedLeft, rectifiedRight, P1, P2, stereo_par.T,
+        //                     disparity, SGBM_par.numDisparities, SGBM_par.minDisparity, stereo);
+
+    }
+#endif
+
 
 /// Функция обратного вызова по клику мышкой
 void onMouseClick(int event, int x, int y, int flags, void* userdata) {
@@ -289,19 +328,28 @@ int main(int argc, char** argv) {
     //cv::createTrackbar("preFilterType", "disparity", &preFilterType, 1, on_trackbar3);
     //cv::createTrackbar("preFilterSize", "disparity", &preFilterSize, 25, on_trackbar4);
 
-    // Создание функций обратной связи для обновления параметров
-    cv::createTrackbar("numDisparities", "disparity", &SGBM_par.numDisparities, 64, on_trackbar);
-    cv::createTrackbar("blockSize", "disparity", &SGBM_par.blockSize, 15, on_trackbar);
-    cv::createTrackbar("preFilterCap", "disparity", &SGBM_par.preFilterCap, 62, on_trackbar);
-    cv::createTrackbar("uniquenessRatio", "disparity", &SGBM_par.uniquenessRatio, 50, on_trackbar);
-    cv::createTrackbar("speckleRange", "disparity", &SGBM_par.speckleRange, 100, on_trackbar);
-    cv::createTrackbar("speckleWindowSize", "disparity", &SGBM_par.speckleWindowSize, 25, on_trackbar);
-    cv::createTrackbar("disp12MaxDiff", "disparity", &SGBM_par.disp12MaxDiff, 25, on_trackbar);
-    cv::createTrackbar("minDisparity", "disparity", &SGBM_par.minDisparity, 25, on_trackbar);
-    cv::createTrackbar("P1", "disparity", &SGBM_par.P1_, 10, on_trackbar);
-    cv::createTrackbar("P2", "disparity", &SGBM_par.P2_, 10, on_trackbar);
-    cv::waitKey(0);
+    #ifdef NO_CUDA
+        // Создание функций обратной связи для обновления параметров
+        cv::createTrackbar("numDisparities", "disparity", &SGBM_par.numDisparities, 64, on_trackbar);
+        cv::createTrackbar("blockSize", "disparity", &SGBM_par.blockSize, 15, on_trackbar);
+        cv::createTrackbar("preFilterCap", "disparity", &SGBM_par.preFilterCap, 62, on_trackbar);
+        cv::createTrackbar("uniquenessRatio", "disparity", &SGBM_par.uniquenessRatio, 50, on_trackbar);
+        cv::createTrackbar("speckleRange", "disparity", &SGBM_par.speckleRange, 100, on_trackbar);
+        cv::createTrackbar("speckleWindowSize", "disparity", &SGBM_par.speckleWindowSize, 25, on_trackbar);
+        cv::createTrackbar("disp12MaxDiff", "disparity", &SGBM_par.disp12MaxDiff, 25, on_trackbar);
+        cv::createTrackbar("minDisparity", "disparity", &SGBM_par.minDisparity, 25, on_trackbar);
+        cv::createTrackbar("P1", "disparity", &SGBM_par.P1_, 10, on_trackbar);
+        cv::createTrackbar("P2", "disparity", &SGBM_par.P2_, 10, on_trackbar);
 
+    #endif
+
+    #ifdef CUDA
+        // Создание функций обратной связи для обновления параметров
+        cv::createTrackbar("numDisparities", "disparity", &cuda_par.numDisparities, 64, on_trackbar);
+        cv::createTrackbar("Block size", "disparity", &cuda_par.blockSize, 15, on_trackbar);
+
+    #endif
+    cv::waitKey(0);
 
     // Нахождение 3д точек
     cv::Mat pointsAll;
