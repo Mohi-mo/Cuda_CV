@@ -22,6 +22,8 @@ using namespace cuda;
 /// \todo Убрать глобальные переменные, сделать их передачу как параметров
 cv::Mat rectifiedLeft, rectifiedRight;
 cv::Mat disparity;
+int click_counter = 0;
+
 
 /// Объявление структур для хранения параметров калибровки
 stereo_output_par_t stereo_par;
@@ -50,8 +52,8 @@ float max_x = -10000.0;
     cuda_sgm_t cuda_par;
 
     /// Создание объектов для алгоритмов рассчёта карты диспарантности с использованием CUDA
-    //cv::Ptr<cv::cuda::StereoSGM> stereo = cv::cuda::createStereoSGM();
-    cv::Ptr<cv::cuda::StereoBeliefPropagation> stereo = cv::cuda::createStereoBeliefPropagation();
+    cv::Ptr<cv::cuda::StereoSGM> stereo = cv::cuda::createStereoSGM();
+    //cv::Ptr<cv::cuda::StereoBeliefPropagation> stereo = cv::cuda::createStereoBeliefPropagation();
 
 
     //int numDisparities = 2;
@@ -64,9 +66,8 @@ float max_x = -10000.0;
         stereo->setNumDisparities(cuda_par.numDisparities*16);
         stereo->setBlockSize(cuda_par.blockSize);
 
-        /// Вычисление карты диспарантности
-        //stereo_d_map(rectifiedLeft, rectifiedRight, disparity, stereo);
 
+        /// Вычисление карты диспарантности с использованием CUDA
         //stereo.estimateRecommendedParams(rectifiedLeft.cols, rectifiedLeft.rows, SGBM_par.numDisparities);
         //int ndisp, iters, levels;
         //cv::cuda::StereoBeliefPropagation::estimateRecommendedParams(rectifiedLeft.cols, rectifiedLeft.rows, ndisp, iters, levels);
@@ -74,17 +75,16 @@ float max_x = -10000.0;
         //std::cout << "Num disparities: "    << ndisp << "\n"
         //            <<"Iters: "             << iters << "\n"
         //            <<"Levels: "            << levels << std::endl;
-
-        /// Вычисление карты диспарантности с использованием CUDA
         cuda_stereo_d_map(rectifiedLeft, rectifiedRight, disparity, stereo);
 
     }
 #endif
 
 #ifdef NO_CUDA
-
     /// Объявление структуры для хранения параметров BM / SGBM
-    stereo_match_t SGBM_par;
+    stereo_sgbm_t SGBM_par;
+    stereo_bm_t bm_par;
+
 
     /// Создание объектов для алгоритмов рассчёта карты диспарантности
     cv::Ptr<cv::StereoBM> stereo = cv::StereoBM::create();
@@ -92,6 +92,9 @@ float max_x = -10000.0;
 
     /// Определение функции, задающей параметры алгоритмов рассчёта карты диспарантности
     void on_trackbar(int, void*){
+
+        // SGBM
+        /*
         stereo->setNumDisparities(SGBM_par.numDisparities*16);
         stereo->setBlockSize(SGBM_par.blockSize*2+5);
         stereo->setMinDisparity(SGBM_par.minDisparity);
@@ -100,23 +103,21 @@ float max_x = -10000.0;
         stereo->setSpeckleWindowSize(SGBM_par.speckleWindowSize);
         stereo->setSpeckleRange(SGBM_par.speckleRange);
         stereo->setDisp12MaxDiff(SGBM_par.disp12MaxDiff);
+        */
 
+        // BM
+        stereo->setPreFilterCap(bm_par.preFilterCap);
+        stereo->setPreFilterSize(bm_par.preFilterSize);
+        stereo->setPreFilterType(bm_par.preFilterType);
+        //stereo->setROI1(bm_par.ROI1);
+        //stereo->setROI2(bm_par.ROI2);
+        stereo->setSmallerBlockSize(bm_par.blockSize+5);
+        stereo->setTextureThreshold(bm_par.getTextureThreshhold);
+        stereo->setNumDisparities(bm_par.numDisparities*16);
+        stereo->setUniquenessRatio(bm_par.uniquenessRatio);
 
         /// Вычисление карты диспарантности
         stereo_d_map(rectifiedLeft, rectifiedRight, disparity, stereo);
-
-        //stereo.estimateRecommendedParams(rectifiedLeft.cols, rectifiedLeft.rows, SGBM_par.numDisparities);
-        //int ndisp, iters, levels;
-        //cv::cuda::StereoBeliefPropagation::estimateRecommendedParams(rectifiedLeft.cols, rectifiedLeft.rows, ndisp, iters, levels);
-
-        //std::cout << "Num disparities: "    << ndisp << "\n"
-        //            <<"Iters: "             << iters << "\n"
-        //            <<"Levels: "            << levels << std::endl;
-
-        /// Вычисление карты диспарантности с использованием CUDA
-        //cuda_stereo_depth_map(rectifiedLeft, rectifiedRight, P1, P2, stereo_par.T,
-        //                     disparity, SGBM_par.numDisparities, SGBM_par.minDisparity, stereo);
-
     }
 #endif
 
@@ -128,6 +129,9 @@ void onMouseClick(int event, int x, int y, int flags, void* userdata) {
     vector<vector<double>>& d3 = data->points3D;
 
     if (event == cv::EVENT_LBUTTONDOWN) {
+
+        std::cout << click_counter++ << std::endl;
+
         cv::Point2f clickPoint(x, y);
         double minDistance = std::numeric_limits<double>::max();
         int closestIdx = -1;
@@ -142,12 +146,33 @@ void onMouseClick(int event, int x, int y, int flags, void* userdata) {
                 closestIdx = i;
             }
         }
+        double prev_x = 0, prev_y = 0, prev_z = 0;
+        double curr_x, curr_y , curr_z = 0;
+        double dist;
+
         //std::cout << "Min distance: " << minDistance << " distance: " << distance << std::endl;
         if (closestIdx != -1) {
-            std::cout << closestIdx << ") X: " << cordsL[closestIdx][1] << " Y: " << cordsL[closestIdx][0] << " Z: " << d3[closestIdx][2]<< std::endl;
+            std::cout << closestIdx << ") X: " << cordsL[closestIdx][1] << " Y: " << cordsL[closestIdx][0] << " Z: " << d3[closestIdx][2]/1000.0<< std::endl;
             cv::circle(rectifiedLeft, cv::Point(cordsL[closestIdx][1], cordsL[closestIdx][0]), 2, cv::Scalar(255, 255, 255), -1);
             cv::putText(rectifiedLeft, std::to_string(closestIdx), cv::Point(cordsL[closestIdx][1], cordsL[closestIdx][0]), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 0, 0), 1);
+
+            curr_x = d3[closestIdx][0]/1000.0;
+            curr_y = d3[closestIdx][1]/1000.0;
+            //curr_z = d3[closestIdx][2]/1000.0;
+
+            if (click_counter == 2){
+                dist = sqrt((prev_x - curr_x)*(prev_x - curr_x) + (prev_y - curr_y)*(prev_y - curr_y) + (prev_z - curr_z)*(prev_z - curr_z));
+                std::cout << "Point dist: " << dist << std::endl;
+                prev_x = curr_x;
+                prev_y = curr_y;
+                //prev_z = curr_z;
+                std::cout << "Point X: "<<  prev_x << " " << prev_x << std::endl;
+                std::cout << "Point Y: "<<  prev_y << " " << prev_y << std::endl;
+                std::cout << "Point Z: "<<  prev_z << " " << prev_z << std::endl;
+                click_counter = 0;
+            }
             cv::imshow("3D points on image", rectifiedLeft);
+
         }
     }
 }
@@ -329,7 +354,18 @@ int main(int argc, char** argv) {
     //cv::createTrackbar("preFilterSize", "disparity", &preFilterSize, 25, on_trackbar4);
 
     #ifdef NO_CUDA
+        cv::createTrackbar("Prefilter cap", "disparity", &bm_par.preFilterCap, 50, on_trackbar);
+        cv::createTrackbar("Prefilter size", "disparity", &bm_par.preFilterSize, 255, on_trackbar);
+        cv::createTrackbar("Prefilter type", "disparity", &bm_par.preFilterType, 2, on_trackbar);
+        //cv::createTrackbar("ROI 1", "disparity", &bm_par.ROI1, 100, on_trackbar);
+        //cv::createTrackbar("ROI 2", "disparity", &bm_par.ROI2, 100, on_trackbar);
+        cv::createTrackbar("Smaller block size", "disparity", &bm_par.blockSize, 25, on_trackbar);
+        cv::createTrackbar("Texture threshold", "disparity", &bm_par.getTextureThreshhold, 100, on_trackbar);
+        cv::createTrackbar("Num disparities", "disparity", &bm_par.numDisparities, 100, on_trackbar);
+
         // Создание функций обратной связи для обновления параметров
+        // SGBM
+        /*
         cv::createTrackbar("numDisparities", "disparity", &SGBM_par.numDisparities, 64, on_trackbar);
         cv::createTrackbar("blockSize", "disparity", &SGBM_par.blockSize, 15, on_trackbar);
         cv::createTrackbar("preFilterCap", "disparity", &SGBM_par.preFilterCap, 62, on_trackbar);
@@ -340,7 +376,7 @@ int main(int argc, char** argv) {
         cv::createTrackbar("minDisparity", "disparity", &SGBM_par.minDisparity, 25, on_trackbar);
         cv::createTrackbar("P1", "disparity", &SGBM_par.P1_, 10, on_trackbar);
         cv::createTrackbar("P2", "disparity", &SGBM_par.P2_, 10, on_trackbar);
-
+*/
     #endif
 
     #ifdef CUDA
@@ -391,44 +427,37 @@ int main(int argc, char** argv) {
     for (int i = 0; i < vu.size(); i++){
         int v = vu[i][0];
         int u = vu[i][1];
-        cv::circle(rectifiedLeft, cv::Point(u, v), 3, cv::Scalar(20, 255, 0), -1);
+        //cv::circle(rectifiedLeft, cv::Point(u, v), 3, cv::Scalar(20, 255, 0), -1);
 
         double x = xyz[i][0];
         double y = xyz[i][1];
         double z = xyz[i][2];
         callbackData.points3D.push_back(xyz[i]);
-
-        if (i < 5){
-            std::cout << std::endl;
-            std::cout << "2D coords: [" << u << ", " << v << "] in pix" << std::endl;
-            std::cout << "3D coords: [" << x << ", " << y << ", "<< z << "] in mm" << std::endl;
-        }
     }
 
 
     //std::cout << xyz.at<cv::Vec3f>(0,0) << std::endl;
 
-    /*
     vector<KeyPoint> keypointsLeft, keypointsRight;
     Mat descriptorsLeft, descriptorsRight;
 
     // Поиск ключевых точек на левом и правом изображениях
-    Ptr<FeatureDetector> detector = ORB::create();
-    detector->detect(rectifiedLeft, keypointsLeft);
-    detector->detect(rectifiedRight, keypointsRight);
+    //Ptr<FeatureDetector> detector = ORB::create();
+    //detector->detect(rectifiedLeft, keypointsLeft);
+    //detector->detect(rectifiedRight, keypointsRight);
 
     // Сопоставление ключевых точек
-    Ptr<DescriptorExtractor> extractor = ORB::create();
-    extractor->compute(rectifiedLeft, keypointsLeft, descriptorsLeft);
-    extractor->compute(rectifiedRight, keypointsRight, descriptorsRight);
+    //Ptr<DescriptorExtractor> extractor = ORB::create();
+    //extractor->compute(rectifiedLeft, keypointsLeft, descriptorsLeft);
+    //extractor->compute(rectifiedRight, keypointsRight, descriptorsRight);
 
-    //Ptr<SIFT> sift = SIFT::create();
-    //sift->detectAndCompute(rectifiedLeft, noArray(), keypointsLeft, descriptorsLeft);
-    //sift->detectAndCompute(rectifiedRight, noArray(), keypointsRight, descriptorsRight);
+    Ptr<SIFT> sift = SIFT::create();
+    sift->detectAndCompute(rectifiedLeft, noArray(), keypointsLeft, descriptorsLeft);
+    sift->detectAndCompute(rectifiedRight, noArray(), keypointsRight, descriptorsRight);
 
     // Использование BFMatcher для сопоставления дескрипторов
-    BFMatcher matcher(NORM_HAMMING);
-    //BFMatcher matcher(NORM_L2);
+    //BFMatcher matcher(NORM_HAMMING);
+    BFMatcher matcher(NORM_L2);
     vector<DMatch> matches;
     matcher.match(descriptorsLeft, descriptorsRight, matches);
 
@@ -444,6 +473,7 @@ int main(int argc, char** argv) {
     // Вывод результатов
     cv::imshow("Matched Points", matchedImage);
 
+    /*
 
     std::vector<Point2f> x, y;
     for (size_t i = 0; i < matches.size(); i++){
@@ -457,8 +487,8 @@ int main(int argc, char** argv) {
 
 
     // Вывод левого изображения и установка функции обратной связи для обработки кликов мыши
-    cv::imshow("3D points on image", rectifiedLeft);
-    cv::setMouseCallback("3D points on image", onMouseClick, &callbackData);
+    //cv::imshow("3D points on image", rectifiedLeft);
+    //cv::setMouseCallback("3D points on image", onMouseClick, &callbackData);
 
     cv::waitKey(0);
     cv::destroyAllWindows();
