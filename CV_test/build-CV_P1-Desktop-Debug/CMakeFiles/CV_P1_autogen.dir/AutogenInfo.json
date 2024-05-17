@@ -100,9 +100,9 @@
 			null
 		],
 		[
-			"/home/labd/CV/CV_test/CV_P1/triangulate.h",
+			"/home/labd/CV/CV_test/CV_P1/disparity.h",
 			"Mu",
-			"EWIEGA46WW/moc_triangulate.cpp",
+			"EWIEGA46WW/moc_disparity.cpp",
 			null
 		]
 	],
@@ -161,8 +161,8 @@
 	"SOURCES" : 
 	[
 		[ "/home/labd/CV/CV_test/CV_P1/calibrate.cpp", "Mu", null ],
-		[ "/home/labd/CV/CV_test/CV_P1/main.cpp", "Mu", null ],
-		[ "/home/labd/CV/CV_test/CV_P1/triangulate.cpp", "Mu", null ]
+		[ "/home/labd/CV/CV_test/CV_P1/disparity.cpp", "Mu", null ],
+		[ "/home/labd/CV/CV_test/CV_P1/main.cpp", "Mu", null ]
 	],
 	"VERBOSITY" : 0
 }

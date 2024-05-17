@@ -6,8 +6,8 @@
 и вывода карт диспарантности и глубины.
 */
 #pragma once
-#ifndef TRIANGULATE_H
-#define TRIANGULATE_H
+#ifndef DISPARITY_H
+#define DISPARITY_H
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
@@ -79,4 +79,4 @@ void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Ma
 
 void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoBeliefPropagation> &stereo);
 
-#endif // TRIANGULATE_H
+#endif // DISPARITY_H

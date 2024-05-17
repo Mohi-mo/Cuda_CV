@@ -10,7 +10,7 @@
 #include <opencv2/cudastereo.hpp>
 
 #include "calibrate.h"
-#include "triangulate.h"
+#include "disparity.h"
 
 
 using namespace std;

@@ -1,4 +1,4 @@
-#include "triangulate.h"
+#include "disparity.h"
 
 
 /// Рассчёт карты диспарантности с использованием алгоритма SGBM
