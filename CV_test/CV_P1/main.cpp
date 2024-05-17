@@ -222,6 +222,7 @@ int main(int argc, char** argv) {
     unsigned int num_set_stereo = 7;            // Номер текущего используемого тестового датасета
     int checkerboard_c;                         // Число ключевых точек по столбцам
     int checkerboard_r;                         // Число ключевых точек по строкам
+    float square_size = 20.1; // in mm
     std::string name;                           // Наименование датасета (и yml-файла)
     bool isCalibrate = false;                   // Флаг принудительной калибровки
 
@@ -305,7 +306,7 @@ int main(int argc, char** argv) {
           }
     } else {
         cout << "Stereo calibration procedure is running..." << endl;
-        calibrate_with_mono(imagesL,imagesR, pathL, pathR, name, checkerboard_c, checkerboard_r, mono_parL, mono_parR, stereo_par);
+        calibrate_with_mono(imagesL,imagesR, pathL, pathR, name, checkerboard_c, checkerboard_r,square_size, mono_parL, mono_parR, stereo_par);
     }
 
     // Вывод параметров стереопары
@@ -483,16 +484,28 @@ int main(int argc, char** argv) {
     for (int i = 0; i < vu.size(); i++){
         int v = vu[i][0];
         int u = vu[i][1];
-        cv::circle(rectifiedLeft, cv::Point(u, v), 3, cv::Scalar(20, 255, 0), -1);
+        cv::circle(rectifiedLeft, cv::Point(u, v), 3, cv::Scalar(200, 200, 200), -1);
 
-        double x = xyz[i][0];
-        double y = xyz[i][1];
-        double z = xyz[i][2];
+        //double x = xyz[i][0];
+        //double y = xyz[i][1];
+        //double z = xyz[i][2];
+
         callbackData.points3D.push_back(xyz[i]);
     }
 
+    // Запись координат найденных точек в файл
+    std::string filename = "3d_points.yml";
+    cv::FileStorage xyz_fs;
 
-    //std::cout << xyz.at<cv::Vec3f>(0,0) << std::endl;
+    xyz_fs.open(filename, cv::FileStorage::WRITE);
+    if (xyz_fs.isOpened()) {
+        xyz_fs << "point3D"              << xyz;
+        xyz_fs << "point2D"              << vu;
+        xyz_fs.release();
+        std::cout << "File " << filename << " was created." << std::endl;
+    } else {
+        std::cerr << "Error while reading the " << filename << "." << std::endl;
+    }
 
     vector<KeyPoint> keypointsLeft, keypointsRight;
     Mat descriptorsLeft, descriptorsRight;
@@ -525,10 +538,8 @@ int main(int argc, char** argv) {
     cv::cvtColor(rectifiedLeft, rectifiedLeft, cv::COLOR_GRAY2BGR);
     cv::cvtColor(rectifiedRight, rectifiedRight, cv::COLOR_GRAY2BGR);
 
-
     // Вывод результатов
     //cv::imshow("Matched Points", matchedImage);
-
 
     // Вывод левого изображения и установка функции обратной связи для обработки кликов мыши
     cv::imshow("3D points on image", rectifiedLeft);

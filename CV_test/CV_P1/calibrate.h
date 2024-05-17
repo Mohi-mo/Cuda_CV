@@ -19,8 +19,6 @@
 
 
 using namespace std;
-using namespace cv;
-using namespace cuda;
 
 
 /// Структура для хранения параметров калибровки одной камеры
@@ -64,7 +62,7 @@ void calibrate_stereo(cv::Mat newCameraML, cv::Mat newCameraMR, std::vector<cv::
 /// Функция калибровки стереопары (моно + стерео)
 void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String> imagesR,
                          std::string pathL,std::string pathR, std::string dataset_name,
-                         int checkerboard_c, int checkerboard_r,
+                         int checkerboard_c, int checkerboard_r, float square_size,
                          mono_output_par_t &mono_outL,mono_output_par_t &mono_outR, stereo_output_par_t &st_out);
 
 /// Функция для отображения параметров одной камеры

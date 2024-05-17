@@ -4,11 +4,11 @@
 /// Функция общей калибровки
 void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String> imagesR,
                          std::string pathL,std::string pathR, std::string dataset_name,
-                         int checkerboard_c, int checkerboard_r,
+                         int checkerboard_c, int checkerboard_r, float square_size,
                          mono_output_par_t &mono_outL,mono_output_par_t &mono_outR, stereo_output_par_t &st_out)
 {
 
-    float square_size = 20.1; // in mm
+    //float square_size = 20.1; // in mm
 
     // Объявление вектора ключевых точек
     std::vector<std::vector<cv::Point3f> > objpoints;
@@ -44,9 +44,9 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
         // Нахождение углов шахматной доски
         // Если на изображении найдено нужное число углов success = true
         successL = cv::findChessboardCorners(grayL, cv::Size(checkerboard_c, checkerboard_r),
-                                             corner_ptsL, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_FILTER_QUADS/*CALIB_CB_NORMALIZE_IMAGE */);
+                                             corner_ptsL, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FILTER_QUADS/*CALIB_CB_NORMALIZE_IMAGE */);
         successR = cv::findChessboardCorners(grayR, cv::Size(checkerboard_c, checkerboard_r),
-                                             corner_ptsR, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_FILTER_QUADS);
+                                             corner_ptsR, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FILTER_QUADS);
 
       if(successL && successR)
       {
@@ -76,7 +76,7 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
       //cv::waitKey(0);
     }
 
-    cv::TermCriteria criteria(TermCriteria::COUNT+TermCriteria::EPS, 10, DBL_EPSILON);
+    cv::TermCriteria criteria(cv::TermCriteria::COUNT+cv::TermCriteria::EPS, 10, DBL_EPSILON);
     int flags = 0;
 
     // Калибровка левой камеры
@@ -195,7 +195,7 @@ void calibrate_camera(std::vector<cv::String> images, std::string path, std::str
 
         // Finding checker board corners
         // If desired number of corners are found in the image then success = true
-        success = cv::findChessboardCorners(gray, cv::Size(checkerboard_c, checkerboard_r), corner_pts, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE );
+        success = cv::findChessboardCorners(gray, cv::Size(checkerboard_c, checkerboard_r), corner_pts, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE );
 
       /*
        * If desired number of corner are detected,
@@ -219,7 +219,7 @@ void calibrate_camera(std::vector<cv::String> images, std::string path, std::str
     }
 
     //cv::destroyAllWindows();
-    cv::TermCriteria criteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON);
+    cv::TermCriteria criteria(cv::TermCriteria::COUNT+cv::TermCriteria::EPS, 30, DBL_EPSILON);
 
     mono_out.RMS = cv::calibrateCamera(objpoints, imgpoints, cv::Size(gray.rows,gray.cols),
                                 mono_out.cameraMatrix, mono_out.distCoeffs, mono_out.rvecs, mono_out.tvecs,
@@ -258,8 +258,8 @@ void calibrate_stereo(cv::Mat newCameraML, cv::Mat newCameraMR,
     std::vector<std::vector<cv::Point3f> > objpoints;
     std::vector<std::vector<cv::Point2f>> imgpoints_left, imgpoints_right;
 
-    glob(path1, im1);
-    glob(path2, im2);
+    cv::glob(path1, im1);
+    cv::glob(path2, im2);
 
     cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.001);
 
@@ -311,7 +311,7 @@ void calibrate_stereo(cv::Mat newCameraML, cv::Mat newCameraMR,
                                           c1_images[0].size(), outp_params.R, outp_params.T,
                                           outp_params.E, outp_params.F, outp_params.rvecs,
                                           outp_params.tvecs, outp_params.perViewErrors,
-                                          0 | CALIB_FIX_INTRINSIC, criteria);
+                                          0 | cv::CALIB_FIX_INTRINSIC, criteria);
 
     outp_params.cameraM1 = newCameraML;
     outp_params.cameraM2 = newCameraMR;

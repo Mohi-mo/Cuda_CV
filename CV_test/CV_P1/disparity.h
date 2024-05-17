@@ -48,21 +48,21 @@ typedef struct StereoBMstruct{
 
 
 typedef struct CudaBM_params {
-    int numDisparities = 128; // Значение кратное 4-м от 1
+    int numDisparities = 128; // Значение кратное 4-м
     int numIters = 5;
     int numLevels = 5;
     int msgType = CV_32F;
 }cuda_bm_t;
 
 typedef struct CudaSGM_params {
-    int numDisparities = 16; // Значение кратное 4-м от 1
+    int numDisparities = 16; // Значение кратное 16-м
     int blockSize = 7;
     int numLevels = 5;
     int numIters = 10;
 }cuda_sgm_t;
 
 typedef struct CudaBP_params {
-    int numDisparities = 256; // Значение кратное 4-м от 1
+    int numDisparities = 256; // Значение кратное 4-м
     int blockSize = 3;
     int numLevels = 5; // <9
     int numIters = 10; // ??
@@ -97,7 +97,9 @@ void stereo_d_map(cv::Mat rectifiedLeft, cv::Mat rectifiedRight, cv::Mat &dispar
 
 void stereo_d_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity, cv::Ptr<cv::StereoBM> &stereo);
 
-// CUDA -------------------------------------------------------------------------------------------------------
+/// ====
+/// CUDA
+/// ====
 void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoBM> &stereo);
 
 void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoSGM> &stereo);
@@ -105,4 +107,5 @@ void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Ma
 void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoBeliefPropagation> &stereo);
 
 void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoConstantSpaceBP> &stereo);
+
 #endif // DISPARITY_H
