@@ -23,37 +23,60 @@
 /// Структура, содержащая параметры объектов StereoSGBM / BM
 typedef struct StereoSGBMstruct{
     int minDisparity = 0;  // 40
-    int numDisparities = 17;
+    int numDisparities = 4;
     int blockSize = 2; // 0
     int P1_ = 0;
     int P2_ = 0;
-    int disp12MaxDiff = 1;
-    int preFilterCap = 45;
-    int uniquenessRatio = 10;
-    int speckleWindowSize = 25;
-    int speckleRange = 10;
-    int mode = cv::StereoSGBM::MODE_SGBM; //  MODE_SGBM
+    int disp12MaxDiff = 0;
+    int preFilterCap = 0;
+    int uniquenessRatio = 3;
+    int speckleWindowSize = 80;
+    int speckleRange = 2;
 }stereo_sgbm_t;
 
 typedef struct StereoBMstruct{
-    int preFilterCap = 45;
-    int preFilterSize = 9;
-    int preFilterType = 0;
+    int preFilterCap = 31;
+    int preFilterSize = 7;
+    int preFilterType = cv::StereoBM::PREFILTER_XSOBEL;
     //cv::Rect ROI1(10, 200, 1000, 700);
     //cv::Rect ROI2(200, 250, 800, 600);
     int blockSize = 7;
-    int getTextureThreshhold = 30;
-    int uniquenessRatio = 10;
+    int getTextureThreshhold = 10;
+    int uniquenessRatio = 15;
     int numDisparities = 17;
 }stereo_bm_t;
 
+
+typedef struct CudaBM_params {
+    int numDisparities = 128; // Значение кратное 4-м от 1
+    int numIters = 5;
+    int numLevels = 5;
+    int msgType = CV_32F;
+}cuda_bm_t;
+
 typedef struct CudaSGM_params {
-    int numDisparities =16; // Значение кратное 4-м от 1
-    int blockSize = 19;
-    int numLevels = 14;
-    int numIters = 6;
-    int mode = cv::cuda::StereoSGM::MODE_SGBM;
+    int numDisparities = 16; // Значение кратное 4-м от 1
+    int blockSize = 7;
+    int numLevels = 5;
+    int numIters = 10;
 }cuda_sgm_t;
+
+typedef struct CudaBP_params {
+    int numDisparities = 256; // Значение кратное 4-м от 1
+    int blockSize = 3;
+    int numLevels = 5; // <9
+    int numIters = 10; // ??
+}cuda_bp_t;
+
+typedef struct CudaCSBP_params {
+    int numDisparities = 128;
+    int blockSize = 3;
+    int numIters = 20;
+    int numLevels = 6;
+    int speckleRange = 2;
+    int speckleWindowSize = 100;
+    int disp12MaxDiff = 0;
+}cuda_csbp_t;
 
 
 /*!
@@ -75,8 +98,11 @@ void stereo_d_map(cv::Mat rectifiedLeft, cv::Mat rectifiedRight, cv::Mat &dispar
 void stereo_d_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity, cv::Ptr<cv::StereoBM> &stereo);
 
 // CUDA -------------------------------------------------------------------------------------------------------
+void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoBM> &stereo);
+
 void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoSGM> &stereo);
 
 void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoBeliefPropagation> &stereo);
 
+void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoConstantSpaceBP> &stereo);
 #endif // DISPARITY_H
