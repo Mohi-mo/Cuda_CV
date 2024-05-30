@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
           }
     } else {
         cout << "Stereo calibration procedure is running..." << endl;
-        calibrate_with_mono(imagesL,imagesR, pathL, pathR, name, checkerboard_c, checkerboard_r,square_size, mono_parL, mono_parR, stereo_par);
+        calibrate_with_mono(imagesL,imagesR, pathL, pathR, mono_parL, mono_parR, stereo_par, checkerboard_c, checkerboard_r,square_size);
     }
 
     // Вывод параметров стереопары

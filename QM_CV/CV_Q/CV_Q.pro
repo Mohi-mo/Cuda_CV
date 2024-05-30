@@ -15,6 +15,13 @@ SOURCES = \
     main.cpp \
     three_dimensional_proc.cpp
 
+TEMPLATE = subdirs
+
+SUBDIRS += Examples/calib_example \
+    Examples/point3dfinder_example \
+    Examples/points2dTo3d_example
+
+
 # Каталог включаемых файлов
 INCLUDEPATH += $$PWD/. \
 INCLUDEPATH += /usr/local/include/opencv4/
@@ -23,8 +30,7 @@ INCLUDEPATH += /usr/local/include/opencv4/
 LIBS += -L/usr/local/lib -lopencv_world
 
 # Подключение библиотек Qt
-QT = widgets core gui
-
+#QT = widgets core gui
 
 
 # Default rules for deployment.

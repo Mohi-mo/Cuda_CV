@@ -16,6 +16,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
 //#include <opencv2/cudaarithm.hpp>
+#include <filesystem>
 
 
 using namespace std;
@@ -51,19 +52,28 @@ typedef struct StereOutputParams{
 
 
 /// Функция калибровки одной камеры
-void calibrate_camera(std::vector<cv::String> images, std::string path, std::string dataset_name,
-                      int checkerboard_w, int checkerboard_h, mono_output_par_t &mono_out);
+void calibrate_camera(std::vector<cv::String> images, mono_output_par_t &mono_out, int checkerboard_w, int checkerboard_h, float square_size);
 
 /// Функция калибровки стереопары
-void calibrate_stereo(cv::Mat newCameraML, cv::Mat newCameraMR, std::vector<cv::String> im1, std::vector<cv::String> im2,
-                      std::string path1, std::string path2, std::string dataset_name,
-                      int checkerboard_w, int checkerboard_h, stereo_output_par_t &outp_params);
+void calibrate_stereo(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR, std::string pathL, std::string pathR,
+                      stereo_output_par_t &outp_params, int checkerboard_w, int checkerboard_h, float square_size);
 
 /// Функция калибровки стереопары (моно + стерео)
-void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String> imagesR,
-                         std::string pathL,std::string pathR, std::string dataset_name,
-                         int checkerboard_c, int checkerboard_r, float square_size,
-                         mono_output_par_t &mono_outL,mono_output_par_t &mono_outR, stereo_output_par_t &st_out);
+void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String> imagesR, std::string pathL,std::string pathR,
+                         mono_output_par_t &mono_outL, mono_output_par_t &mono_outR, stereo_output_par_t &stereo_output_params,
+                         int checkerboard_c, int checkerboard_r, float square_size);
+
+/// Функция чтения параметров калибровки одной камеры из файлов
+mono_output_par_t read_mono_params(std::string filename);
+
+/// Функция чтения параметров калибровки двух камер из файлов
+stereo_output_par_t read_stereo_params(std::string filename);
+
+/// Функция для записи параметров калибровки одной камеры
+void write_mono_params(std::string filename, mono_output_par_t mono_params_struct);
+
+/// Функция для записи параметров калибровки двух камер
+void write_stereo_params(std::string filename, stereo_output_par_t stereo_params_struct);
 
 /// Функция для отображения параметров одной камеры
 void print_mono_camera_parameters(std::string name, mono_output_par_t mono_struct);
