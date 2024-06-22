@@ -6,8 +6,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-#include <opencv2/cudaarithm.hpp>
-#include <opencv2/cudastereo.hpp>
+//#include <opencv2/cudaarithm.hpp>
+//#include <opencv2/cudastereo.hpp>
 
 #include "calibrate.h"
 #include "disparity.h"
@@ -19,16 +19,16 @@ using namespace cv;
 using namespace cuda;
 
 
-/// Объявление переменных (временно)
-/// \todo Убрать глобальные переменные, сделать их передачу как параметров
+/// РћР±СЉСЏРІР»РµРЅРёРµ РїРµСЂРµРјРµРЅРЅС‹С… (РІСЂРµРјРµРЅРЅРѕ)
+/// \todo РЈР±СЂР°С‚СЊ РіР»РѕР±Р°Р»СЊРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ, СЃРґРµР»Р°С‚СЊ РёС… РїРµСЂРµРґР°С‡Сѓ РєР°Рє РїР°СЂР°РјРµС‚СЂРѕРІ
 cv::Mat rectifiedLeft, rectifiedRight, imageLeft, imageRight;
 cv::Mat disparity;
 int click_counter = 0;
 
-int mode = 1; // Смена алгоритмов Stereo
+int mode = 1; // РЎРјРµРЅР° Р°Р»РіРѕСЂРёС‚РјРѕРІ Stereo
 
 
-/// Объявление структур для хранения параметров калибровки
+/// РћР±СЉСЏРІР»РµРЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РєР°Р»РёР±СЂРѕРІРєРё
 stereo_output_par_t stereo_par;
 
 struct MouseCallbackData {
@@ -48,7 +48,7 @@ void onMouseClick(int event, int x, int y, int flags, void* userdata){
 
     if (event == cv::EVENT_LBUTTONDOWN){
         cv::Point clickPoint(x,y);
-        std::cout << third_coords(imageLeft, imageRight, clickPoint, *coords) << std::endl;
+        //std::cout << third_coords(imageLeft, imageRight, clickPoint, *coords) << std::endl;
     }
 }
 
@@ -59,17 +59,17 @@ int main(int argc, char** argv) {
 
     MouseCallbackData callbackData;
 
-    std::vector<cv::String> imagesL, imagesR;   // Переменные, содержащие названия изображений в датасетах
-    std::string pathL, pathR;                   // Переменные, содержащие пути к датасетам
-    unsigned int num_set = 6;                   // Номер текущего используемого калибровочного датасета
-    unsigned int num_set_stereo = 7;            // Номер текущего используемого тестового датасета
-    int checkerboard_c;                         // Число ключевых точек по столбцам
-    int checkerboard_r;                         // Число ключевых точек по строкам
-    float square_size = 20.1;                   // Размер квадрата калибровочной доски в мм
-    std::string name;                           // Наименование датасета (и yml-файла)
-    bool isCalibrate = false;                   // Флаг принудительной калибровки
+    std::vector<cv::String> imagesL, imagesR;   // РџРµСЂРµРјРµРЅРЅС‹Рµ, СЃРѕРґРµСЂР¶Р°С‰РёРµ РЅР°Р·РІР°РЅРёСЏ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІ РґР°С‚Р°СЃРµС‚Р°С…
+    std::string pathL, pathR;                   // РџРµСЂРµРјРµРЅРЅС‹Рµ, СЃРѕРґРµСЂР¶Р°С‰РёРµ РїСѓС‚Рё Рє РґР°С‚Р°СЃРµС‚Р°Рј
+    unsigned int num_set = 6;                   // РќРѕРјРµСЂ С‚РµРєСѓС‰РµРіРѕ РёСЃРїРѕР»СЊР·СѓРµРјРѕРіРѕ РєР°Р»РёР±СЂРѕРІРѕС‡РЅРѕРіРѕ РґР°С‚Р°СЃРµС‚Р°
+    unsigned int num_set_stereo = 7;            // РќРѕРјРµСЂ С‚РµРєСѓС‰РµРіРѕ РёСЃРїРѕР»СЊР·СѓРµРјРѕРіРѕ С‚РµСЃС‚РѕРІРѕРіРѕ РґР°С‚Р°СЃРµС‚Р°
+    int checkerboard_c;                         // Р§РёСЃР»Рѕ РєР»СЋС‡РµРІС‹С… С‚РѕС‡РµРє РїРѕ СЃС‚РѕР»Р±С†Р°Рј
+    int checkerboard_r;                         // Р§РёСЃР»Рѕ РєР»СЋС‡РµРІС‹С… С‚РѕС‡РµРє РїРѕ СЃС‚СЂРѕРєР°Рј
+    float square_size = 20.1;                   // Р Р°Р·РјРµСЂ РєРІР°РґСЂР°С‚Р° РєР°Р»РёР±СЂРѕРІРѕС‡РЅРѕР№ РґРѕСЃРєРё РІ РјРј
+    std::string name;                           // РќР°РёРјРµРЅРѕРІР°РЅРёРµ РґР°С‚Р°СЃРµС‚Р° (Рё yml-С„Р°Р№Р»Р°)
+    bool isCalibrate = false;                   // Р¤Р»Р°Рі РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕР№ РєР°Р»РёР±СЂРѕРІРєРё
 
-    // Выбор датасета для калибровки
+    // Р’С‹Р±РѕСЂ РґР°С‚Р°СЃРµС‚Р° РґР»СЏ РєР°Р»РёР±СЂРѕРІРєРё
     switch (num_set){
     case 0:
         pathL = "../../Fotoset/T_rep/left";
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
         break;
     }
 
-    // Калибровка стереопары
+    // РљР°Р»РёР±СЂРѕРІРєР° СЃС‚РµСЂРµРѕРїР°СЂС‹
     cv::FileStorage stereo_fs;
     if (stereo_fs.open("../../Calibration_parameters(stereo)/A" + name + "_stereo_camera_parameters.yml", cv::FileStorage::READ) && (!isCalibrate)){
         if (stereo_fs.isOpened()){
@@ -146,16 +146,16 @@ int main(int argc, char** argv) {
             stereo_fs["PerViewErrors"]              >> stereo_par.perViewErrors;
             stereo_fs["RMS"]                        >> stereo_par.RMS;
             stereo_fs.release();
-          }
+        }
     } else {
         cout << "Stereo calibration procedure is running..." << endl;
         calibrate_with_mono(imagesL,imagesR, pathL, pathR, mono_parL, mono_parR, stereo_par, checkerboard_c, checkerboard_r,square_size);
     }
 
-    // Вывод параметров стереопары
+    // Р’С‹РІРѕРґ РїР°СЂР°РјРµС‚СЂРѕРІ СЃС‚РµСЂРµРѕРїР°СЂС‹
     print_stereo_camera_parameters(stereo_par);
 
-    // Загрузка тестовых левого и правого изображений
+    // Р—Р°РіСЂСѓР·РєР° С‚РµСЃС‚РѕРІС‹С… Р»РµРІРѕРіРѕ Рё РїСЂР°РІРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№
     //cv::Mat imageLeft, imageRight;
     switch(num_set_stereo){
     case 0:
@@ -196,7 +196,8 @@ int main(int argc, char** argv) {
 
 
     cv::Mat pointsAll;
-    point3d_finder(imageLeft, imageRight, pointsAll);
+    //point3d_finder(imageLeft, imageRight, pointsAll);
+
 
     //cv::cvtColor(imageLeft, imageLeft, cv::COLOR_GRAY2BGR);
 

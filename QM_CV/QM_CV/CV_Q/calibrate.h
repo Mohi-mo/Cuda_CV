@@ -9,29 +9,31 @@
 #ifndef CALIBRATE_H
 #define CALIBRATE_H
 
-#include <iostream>
 
-#include "opencv2/core.hpp"
+#include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
-//#include <opencv2/cudaarithm.hpp>
-#include <filesystem>
 
+#include <iostream>
+
+//#include <opencv2/cudaarithm.hpp>
+
+//#include <filesystem>
 
 using namespace std;
 
 
 /// Структура для хранения параметров калибровки одной камеры
 typedef struct MonoOutputParams{
-  cv::Mat cameraMatrix;     // Матрица камеры
-  cv::Mat distCoeffs;       // Вектор коэффициентов дисторсии
-  cv::Mat rvecs;            // Кортеж векторов поворота для перехода из базиса объекта в базис камеры
-  cv::Mat tvecs;            // Кортеж векторов смещения для перехода из базиса объекта в базис камеры
-  cv::Mat stdDevIntrinsics; // Вектор оценок внутренних параметров камеры
-  cv::Mat stdDevExtrinsics; // Вектор оценок внешних параметров камеры
-  cv::Mat perViewErrors;    // Вектор среднеквадратической ошибки перепроецирования для каждого вида
-  double RMS;               // Значение среднеквадратической ошибки перепроецирования
+    cv::Mat cameraMatrix;     // Матрица камеры
+    cv::Mat distCoeffs;       // Вектор коэффициентов дисторсии
+    cv::Mat rvecs;            // Кортеж векторов поворота для перехода из базиса объекта в базис камеры
+    cv::Mat tvecs;            // Кортеж векторов смещения для перехода из базиса объекта в базис камеры
+    cv::Mat stdDevIntrinsics; // Вектор оценок внутренних параметров камеры
+    cv::Mat stdDevExtrinsics; // Вектор оценок внешних параметров камеры
+    cv::Mat perViewErrors;    // Вектор среднеквадратической ошибки перепроецирования для каждого вида
+    double RMS;               // Значение среднеквадратической ошибки перепроецирования
 }mono_output_par_t;
 
 /// Структура для хранения параметров калибровки двух камер

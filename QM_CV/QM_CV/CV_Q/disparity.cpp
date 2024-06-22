@@ -5,7 +5,7 @@
 /// Рассчёт карты диспаратности без CUDA
 /// ====================================
 void stereo_d_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity,
-                      cv::Ptr<cv::StereoSGBM> &stereo){
+                  cv::Ptr<cv::StereoSGBM> &stereo){
 
     cv::Mat coloredDispMap, disparityMap;
     stereo->compute(rectifiedImageLeft, rectifiedImageRight, disparityMap);
@@ -33,7 +33,7 @@ void stereo_d_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::M
 }
 
 void stereo_d_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::Mat &disparity,
-                      cv::Ptr<cv::StereoBM> &stereo){
+                  cv::Ptr<cv::StereoBM> &stereo){
 
     cv::Mat coloredDispMap, disparityMap;
 
@@ -56,8 +56,11 @@ void stereo_d_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::M
 /// =================================================
 /// Функции поиска карт диспаратности с помощью CUDA
 /// =================================================
+///
+
+/*
 void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,  cv::Mat &disparity,
-                           cv::Ptr<cv::cuda::StereoBM> &stereo){
+                       cv::Ptr<cv::cuda::StereoBM> &stereo){
 
     cv::Mat coloredDispMap, disparityMap;
 
@@ -85,7 +88,7 @@ void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,  cv::M
 
 /// Рассчёт карты диспарантности с использованием CUDA SGM
 void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,  cv::Mat &disparity,
-                           cv::Ptr<cv::cuda::StereoSGM> &stereo){
+                       cv::Ptr<cv::cuda::StereoSGM> &stereo){
 
     cv::Mat coloredDispMap, disparityMap;
 
@@ -144,7 +147,7 @@ void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Ma
 }
 
 void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,  cv::Mat &disparity,
-                           cv::Ptr<cv::cuda::StereoConstantSpaceBP> &stereo){
+                       cv::Ptr<cv::cuda::StereoConstantSpaceBP> &stereo){
 
     cv::Mat coloredDispMap, disparityMap;
 
@@ -175,3 +178,4 @@ void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight,  cv::M
     cv::applyColorMap(disparity, coloredDispMap, cv::COLORMAP_JET);
     //cv::imshow("Colored disparity Map", coloredDispMap);
 }
+*/

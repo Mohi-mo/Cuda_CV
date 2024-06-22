@@ -3,7 +3,6 @@
 
 std::vector<std::vector<double>> point3d_finder(cv::Mat imageL, cv::Mat imageR, stereo_output_par_t calib_par){
 
-
     // Стереоректификация изображений
     cv::Mat mapLx, mapLy, mapRx, mapRy;
     cv::Mat Q, R1, R2, P1, P2;

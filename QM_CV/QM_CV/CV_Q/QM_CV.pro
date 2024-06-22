@@ -1,17 +1,31 @@
-QT = core
+QT += core
+QT -= gui
 
-CONFIG += c++17 cmdline
-CONFIG += core
+CONFIG += c++17
+CONFIG =+ console
+CONFIG -= app_bundle
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-HEADERS += ..\..\calibrate.h
+HEADERS = \
+    calibrate.h \
+    disparity.h \
+    three_dimensional_proc.h
 
-SOURCES += \
-        main.cpp \
-        ..\..\calibrate.cpp
+SOURCES = \
+    calibrate.cpp \
+    disparity.cpp \
+    main.cpp \
+    three_dimensional_proc.cpp
+
+
+TEMPLATE = subdirs
+
+SUBDIRS += Examples/calib_example \
+    Examples/point3dfinder_example \
+    Examples/points2dTo3d_example
 
 
 win32 {
