@@ -45,28 +45,28 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
         successR = cv::findChessboardCorners(grayR, cv::Size(checkerboard_c, checkerboard_r),
                                              corner_ptsR, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FILTER_QUADS);
 
-        if(successL && successR)
-        {
-            cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 10, 1e-6);
+      if(successL && successR)
+      {
+        cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 10, 1e-6);
 
-            // Уточнение координат пикселей для заданных двумерных точек
-            cv::cornerSubPix(grayL,corner_ptsL,cv::Size(11,11), cv::Size(-1,-1),criteria);
-            cv::cornerSubPix(grayR,corner_ptsR,cv::Size(11,11), cv::Size(-1,-1),criteria);
+        // Уточнение координат пикселей для заданных двумерных точек
+        cv::cornerSubPix(grayL,corner_ptsL,cv::Size(11,11), cv::Size(-1,-1),criteria);
+        cv::cornerSubPix(grayR,corner_ptsR,cv::Size(11,11), cv::Size(-1,-1),criteria);
 
-            // Отображение обнаруженных угловых точек на шахматной доске
-            cv::drawChessboardCorners(frameL, cv::Size(checkerboard_c, checkerboard_r), corner_ptsL, successL);
-            cv::drawChessboardCorners(frameR, cv::Size(checkerboard_c, checkerboard_r), corner_ptsR, successL);
+        // Отображение обнаруженных угловых точек на шахматной доске
+        cv::drawChessboardCorners(frameL, cv::Size(checkerboard_c, checkerboard_r), corner_ptsL, successL);
+        cv::drawChessboardCorners(frameR, cv::Size(checkerboard_c, checkerboard_r), corner_ptsR, successL);
 
-            objpoints.push_back(objp);
-            imgpointsL.push_back(corner_ptsL);
-            imgpointsR.push_back(corner_ptsR);
+        objpoints.push_back(objp);
+        imgpointsL.push_back(corner_ptsL);
+        imgpointsR.push_back(corner_ptsR);
 
-        }
+      }
 
-        // Отображение последних кадров с отмеченными точками
-        //cv::imshow("Left calib image", frameL);
-        //cv::imshow("Right calib image", frameR);
-        //cv::waitKey(0);
+      // Отображение последних кадров с отмеченными точками
+      //cv::imshow("Left calib image", frameL);
+      //cv::imshow("Right calib image", frameR);
+      //cv::waitKey(0);
     }
 
     cv::TermCriteria criteria(cv::TermCriteria::COUNT+cv::TermCriteria::EPS, 10, DBL_EPSILON);
@@ -74,19 +74,18 @@ void calibrate_with_mono(std::vector<cv::String> imagesL,std::vector<cv::String>
 
     // Калибровка левой камеры
     mono_outL.RMS = cv::calibrateCamera(objpoints, imgpointsL, cv::Size(grayL.cols,grayL.rows),
-                                        mono_outL.cameraMatrix, mono_outL.distCoeffs, mono_outL.rvecs, mono_outL.tvecs,
-                                        mono_outL.stdDevIntrinsics, mono_outL.stdDevExtrinsics, mono_outL.perViewErrors, flags, criteria);
+                                mono_outL.cameraMatrix, mono_outL.distCoeffs, mono_outL.rvecs, mono_outL.tvecs,
+                                mono_outL.stdDevIntrinsics, mono_outL.stdDevExtrinsics, mono_outL.perViewErrors, flags, criteria);
 
     // Калибровка правой камеры
     mono_outR.RMS = cv::calibrateCamera(objpoints, imgpointsR, cv::Size(grayL.cols,grayL.rows),
-                                        mono_outR.cameraMatrix, mono_outR.distCoeffs, mono_outR.rvecs, mono_outR.tvecs,
-                                        mono_outR.stdDevIntrinsics, mono_outR.stdDevExtrinsics, mono_outR.perViewErrors, flags, criteria);
+                                mono_outR.cameraMatrix, mono_outR.distCoeffs, mono_outR.rvecs, mono_outR.tvecs,
+                                mono_outR.stdDevIntrinsics, mono_outR.stdDevExtrinsics, mono_outR.perViewErrors, flags, criteria);
 
     // Калибровка двух камер
-
     st_out.RMS = cv::stereoCalibrate(objpoints, imgpointsL, imgpointsR, st_out.cameraM1, st_out.distCoeffs1,
-                                     st_out.cameraM2, st_out.distCoeffs2, cv::Size(grayL.cols,grayL.rows), st_out.R, st_out.T,
-                                     st_out.E, st_out.F, st_out.perViewErrors, 0, criteria);
+                        st_out.cameraM2, st_out.distCoeffs2, cv::Size(grayL.cols,grayL.rows), st_out.R, st_out.T,
+                        st_out.E, st_out.F, st_out.rvecs, st_out.tvecs, st_out.perViewErrors, 0, criteria);
 }
 
 
@@ -125,26 +124,26 @@ void calibrate_camera(std::vector<cv::String> images, std::string path, mono_out
         // If desired number of corners are found in the image then success = true
         success = cv::findChessboardCorners(gray, cv::Size(checkerboard_c, checkerboard_r), corner_pts, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FILTER_QUADS);
 
-        if(success)
-        {
-            cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.001);
+      if(success)
+      {
+        cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.001);
 
-            // refining pixel coordinates for given 2d points.
-            cv::cornerSubPix(gray,corner_pts,cv::Size(11,11), cv::Size(-1,-1),criteria);
+        // refining pixel coordinates for given 2d points.
+        cv::cornerSubPix(gray,corner_pts,cv::Size(11,11), cv::Size(-1,-1),criteria);
 
-            // Displaying the detected corner points on the checker board
-            cv::drawChessboardCorners(frame, cv::Size(checkerboard_c, checkerboard_r), corner_pts, success);
+        // Displaying the detected corner points on the checker board
+        cv::drawChessboardCorners(frame, cv::Size(checkerboard_c, checkerboard_r), corner_pts, success);
 
-            objpoints.push_back(objp);
-            imgpoints.push_back(corner_pts);
-        }
+        objpoints.push_back(objp);
+        imgpoints.push_back(corner_pts);
+      }
     }
 
     cv::TermCriteria criteria(cv::TermCriteria::COUNT+cv::TermCriteria::EPS, 30, DBL_EPSILON);
 
     mono_out.RMS = cv::calibrateCamera(objpoints, imgpoints, cv::Size(gray.rows,gray.cols),
-                                       mono_out.cameraMatrix, mono_out.distCoeffs, mono_out.rvecs, mono_out.tvecs,
-                                       mono_out.stdDevIntrinsics, mono_out.stdDevExtrinsics, mono_out.perViewErrors, 0, criteria);
+                                mono_out.cameraMatrix, mono_out.distCoeffs, mono_out.rvecs, mono_out.tvecs,
+                                mono_out.stdDevIntrinsics, mono_out.stdDevExtrinsics, mono_out.perViewErrors, 0, criteria);
 }
 
 
@@ -202,21 +201,10 @@ void calibrate_stereo(std::vector<cv::String> imagesL, std::vector<cv::String> i
             //cv::imshow("img2", c2_images[i]);
         }
     }
-    /*
-    double stereoCalibrate( InputArrayOfArrays objectPoints,
-                           InputArrayOfArrays imagePoints1, InputArrayOfArrays imagePoints2,
-                           InputOutputArray cameraMatrix1, InputOutputArray distCoeffs1,
-                           InputOutputArray cameraMatrix2, InputOutputArray distCoeffs2,
-                           Size imageSize, InputOutputArray R,InputOutputArray T, OutputArray E, OutputArray F,
-                           OutputArray perViewErrors, int flags = CALIB_FIX_INTRINSIC,
-                           TermCriteria criteria = TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, 1e-6) );
-*/
-
 
     stereo_output_params.RMS = cv::stereoCalibrate(objpoints, imgpoints_left, imgpoints_right, stereo_output_params.cameraM1, stereo_output_params.distCoeffs1,
-                                                   stereo_output_params.cameraM2, stereo_output_params.distCoeffs2, cv::Size(grayL.cols,grayL.rows), stereo_output_params.R, stereo_output_params.T,
-                                                   stereo_output_params.E, stereo_output_params.F, stereo_output_params.perViewErrors, 0, criteria);
-
+                        stereo_output_params.cameraM2, stereo_output_params.distCoeffs2, cv::Size(grayL.cols,grayL.rows), stereo_output_params.R, stereo_output_params.T,
+                        stereo_output_params.E, stereo_output_params.F, stereo_output_params.rvecs, stereo_output_params.tvecs, stereo_output_params.perViewErrors, 0, criteria);
 }
 
 // Функция отображения параметров камеры

@@ -10,15 +10,14 @@
 #define DISPARITY_H
 
 #include <iostream>
-
 #include <opencv2/opencv.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-//#include <opencv2/cudaarithm.hpp>
-//#include <opencv2/cudastereo.hpp>
+#include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudastereo.hpp>
 
 
 /// Структура, содержащая параметры объектов StereoSGBM / BM
@@ -101,12 +100,12 @@ void stereo_d_map(cv::Mat rectifiedImageLeft, cv::Mat rectifiedImageRight, cv::M
 /// ====
 /// CUDA
 /// ====
-//void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoBM> &stereo);
+void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoBM> &stereo);
 
-//void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoSGM> &stereo);
+void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoSGM> &stereo);
 
-//void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoBeliefPropagation> &stereo);
+void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoBeliefPropagation> &stereo);
 
-//void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoConstantSpaceBP> &stereo);
+void cuda_stereo_d_map(cv::Mat rectifiedImLeft, cv::Mat rectifiedImRight, cv::Mat &disparity, cv::Ptr<cv::cuda::StereoConstantSpaceBP> &stereo);
 
 #endif // DISPARITY_H
